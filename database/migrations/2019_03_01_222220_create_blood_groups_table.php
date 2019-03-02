@@ -14,8 +14,8 @@ class CreateBloodGroupsTable extends Migration
     public function up()
     {
         Schema::create('blood_groups', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->timestamps();
+            $table->tinyIncrements('id');
+            $table->string('blood_group', 3)->unique();
         });
     }
 

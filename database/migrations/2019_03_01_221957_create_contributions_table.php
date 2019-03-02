@@ -15,7 +15,14 @@ class CreateContributionsTable extends Migration
     {
         Schema::create('contributions', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->bigInteger('user_id')->unsigned()->index();
+            $table->decimal('amount', 20, 2);
+            $table->tinyInteger('month')->unsigned()->nullable();
+            $table->integer('year')->unsigned()->nullable();
             $table->timestamps();
+
+            $table->unique(['user_id', 'month', 'year'], 'DUPLICATE_RECORD');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

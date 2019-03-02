@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class Genotype extends Model
 {
-    //
+  public $timestamps = false;
 }

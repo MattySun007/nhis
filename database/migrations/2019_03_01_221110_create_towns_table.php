@@ -14,8 +14,14 @@ class CreateTownsTable extends Migration
     public function up()
     {
         Schema::create('towns', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->timestamps();
+            $table->increments('id');
+            $table->string('name', 100);
+            $table->string('abbreviation', 10);
+            $table->integer('state_id')->unsigned()->index();
+            $table->integer('lga_id')->unsigned()->index();
+
+            $table->foreign('state_id')->references('id')->on('states')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('lga_id')->references('id')->on('lgas')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

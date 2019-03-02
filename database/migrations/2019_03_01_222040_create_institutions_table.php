@@ -15,7 +15,23 @@ class CreateInstitutionsTable extends Migration
     {
         Schema::create('institutions', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->string('code', 20)->unique();
+            $table->string('name', 45)->unique();
+            $table->string('phone', 15);
+            $table->string('email', 125);
+            $table->string('address', 125);
+            $table->string('rcc_number', 100)->nullable();
+            $table->integer('country_id')->unsigned()->nullable()->index();
+            $table->integer('state_id')->unsigned()->nullable()->index();
+            $table->integer('lga_id')->unsigned()->nullable()->index();
+            $table->integer('town_id')->unsigned()->nullable()->index();
+            $table->boolean('active')->default('1');
             $table->timestamps();
+
+            $table->foreign('country_id')->references('id')->on('countries')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('state_id')->references('id')->on('states')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('lga_id')->references('id')->on('lgas')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('town_id')->references('id')->on('towns')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

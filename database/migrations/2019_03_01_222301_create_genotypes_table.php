@@ -14,8 +14,8 @@ class CreateGenotypesTable extends Migration
     public function up()
     {
         Schema::create('genotypes', function (Blueprint $table) {
-            $table->bigIncrements('id');
-            $table->timestamps();
+            $table->tinyIncrements('id');
+            $table->string('genotype', 2)->unique();
         });
     }
 
