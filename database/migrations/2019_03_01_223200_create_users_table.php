@@ -21,13 +21,14 @@ class CreateUsersTable extends Migration
             $table->string('email', 125)->unique();
             $table->string('phone', 15)->unique();
             $table->string('password');
+            $table->timestamp('email_verified_at')->nullable();
             $table->date('date_of_birth')->nullable();
             $table->string('colour', 50)->nullable();
             $table->tinyInteger('height')->nullable();
-            $table->integer('marital_status_id')->unsigned()->nullable()->index();
-            $table->integer('genotype_id')->unsigned()->nullable()->index();
-            $table->integer('blood_group_id')->unsigned()->nullable()->index();
-            $table->integer('gender_id')->unsigned()->nullable()->index();
+            $table->tinyInteger('marital_status_id')->unsigned()->nullable()->index();
+            $table->tinyInteger('genotype_id')->unsigned()->nullable()->index();
+            $table->tinyInteger('blood_group_id')->unsigned()->nullable()->index();
+            $table->tinyInteger('gender_id')->unsigned()->nullable()->index();
             $table->boolean('status')->default('1');
             $table->decimal('contribution_amount', 20, 2)->default('0.0');
             $table->rememberToken();

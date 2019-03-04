@@ -22,7 +22,6 @@ class CreateHcpsTable extends Migration
             $table->string('email', 125);
             $table->string('account_number', 20)->nullable();
             $table->string('cbn_code', 10)->nullable();
-            $table->string('account_number', 20)->nullable();
             $table->string('account_name', 100)->nullable();
             $table->tinyInteger('account_type')->default('2');
             $table->integer('country_id')->unsigned()->nullable()->index();
