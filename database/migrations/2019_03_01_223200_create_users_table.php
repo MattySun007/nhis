@@ -15,13 +15,28 @@ class CreateUsersTable extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('first_name', 50)->nullable();
+            $table->string('middle_name', 50)->nullable();
+            $table->string('last_name', 50)->nullable();
+            $table->string('email', 125)->unique();
+            $table->string('phone', 15)->unique();
             $table->string('password');
+            $table->date('date_of_birth')->nullable();
+            $table->string('colour', 50)->nullable();
+            $table->tinyInteger('height')->nullable();
+            $table->integer('marital_status_id')->unsigned()->nullable()->index();
+            $table->integer('genotype_id')->unsigned()->nullable()->index();
+            $table->integer('blood_group_id')->unsigned()->nullable()->index();
+            $table->integer('gender_id')->unsigned()->nullable()->index();
+            $table->boolean('status')->default('1');
+            $table->decimal('contribution_amount', 20, 2)->default('0.0');
             $table->rememberToken();
             $table->timestamps();
+
+            $table->foreign('marital_status_id')->references('id')->on('marital_statuses')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('genotype_id')->references('id')->on('genotypes')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('blood_group_id')->references('id')->on('blood_groups')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('gender_id')->references('id')->on('genders')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 
