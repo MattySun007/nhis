@@ -16,7 +16,7 @@ class CreateAdopteesTable extends Migration
         Schema::create('adoptees', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('user_id')->unsigned()->index();
-            $table->bigInteger('adoptee_id')->unsigned()->index()->unique();
+            $table->bigInteger('adoptee_id')->unsigned()->index();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');

@@ -16,7 +16,7 @@ class CreateInstitutionUserTable extends Migration
         Schema::create('institution_user', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->bigInteger('institution_id')->unsigned()->index();
-            $table->bigInteger('user_id')->unsigned()->index()->unique();
+            $table->bigInteger('user_id')->unsigned()->index();
             $table->timestamps();
 
             $table->foreign('institution_id')->references('id')->on('institutions')->onDelete('cascade')->onUpdate('cascade');

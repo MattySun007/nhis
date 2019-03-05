@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateHcpUserTable extends Migration
+class CreateIndividualsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,11 @@ class CreateHcpUserTable extends Migration
      */
     public function up()
     {
-        Schema::create('hcp_user', function (Blueprint $table) {
+        Schema::create('individuals', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->bigInteger('hcp_id')->unsigned()->index();
-            $table->bigInteger('user_id')->unsigned()->index();
+            $table->bigInteger('user_id')->unsigned()->index()->unique();
             $table->timestamps();
 
-            $table->foreign('hcp_id')->references('id')->on('hcps')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
         });
     }
@@ -31,6 +29,6 @@ class CreateHcpUserTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('hcp_user');
+        Schema::dropIfExists('individuals');
     }
 }
