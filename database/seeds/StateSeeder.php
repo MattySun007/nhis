@@ -15,265 +15,265 @@ class StateSeeder extends Seeder
         $data = [
             [
                 'id' => '1',
-                'state' =>  'ABIA',
-                'abreviation' =>  'AB',
+                'name' =>  'ABIA',
+                'abbreviation' =>  'AB',
                 'country_id' => 1,
 
             ],
             [
             'id' => '2',
-            'state' =>  'ADAMAWA',
-            'abreviation' =>  'ADM',
+            'name' =>  'ADAMAWA',
+            'abbreviation' =>  'ADM',
             'country_id' => 1,
 
             ],
             [
             'id' => '3',
-            'state' =>  'AKWA IBOM',
-            'abreviation' =>  'AKW',
+            'name' =>  'AKWA IBOM',
+            'abbreviation' =>  'AKW',
             'country_id' => 1,
 
             ],
             [
             'id' => '4',
-            'state' =>  'ANAMBRA',
-            'abreviation' =>  '4',
+            'name' =>  'ANAMBRA',
+            'abbreviation' =>  '4',
             'country_id' => 1,
 
             ],
             [
             'id' => '5',
-            'state' =>  'BAUCHI',
-            'abreviation' =>  '5',
+            'name' =>  'BAUCHI',
+            'abbreviation' =>  '5',
             'country_id' => 1,
 
             ],
             [
             'id' => '6',
-            'state' =>  'BAYELSA',
-            'abreviation' =>  '6',
+            'name' =>  'BAYELSA',
+            'abbreviation' =>  '6',
             'country_id' => 1,
 
             ],
             [
             'id' => '7',
-            'state' =>  'BENUE',
-            'abreviation' =>  '7',
+            'name' =>  'BENUE',
+            'abbreviation' =>  '7',
             'country_id' => 1,
 
             ],
             [
             'id' => '8',
-            'state' =>  'BORNO',
-            'abreviation' =>  '8',
+            'name' =>  'BORNO',
+            'abbreviation' =>  '8',
             'country_id' => 1,
 
             ],
             [
             'id' => '9',
-            'state' =>  'CROSS RIVER',
-            'abreviation' =>  '9',
+            'name' =>  'CROSS RIVER',
+            'abbreviation' =>  '9',
             'country_id' => 1,
 
             ],
             [
             'id' => '10',
-            'state' =>  'DELTA',
-            'abreviation' =>  '10',
+            'name' =>  'DELTA',
+            'abbreviation' =>  '10',
             'country_id' => 1,
 
             ],
             [
             'id' => '11',
-            'state' =>  'EBONYI',
-            'abreviation' =>  '11',
+            'name' =>  'EBONYI',
+            'abbreviation' =>  '11',
             'country_id' => 1,
 
             ],
             [
             'id' => '12',
-            'state' =>  'EDO',
-            'abreviation' =>  '12',
+            'name' =>  'EDO',
+            'abbreviation' =>  '12',
             'country_id' => 1,
 
             ],
             [
             'id' => '13',
-            'state' =>  'EKITI',
-            'abreviation' =>  '13',
+            'name' =>  'EKITI',
+            'abbreviation' =>  '13',
             'country_id' => 1,
 
             ],
             [
             'id' => '14',
-            'state' =>  'ENUGU',
-            'abreviation' =>  '14',
+            'name' =>  'ENUGU',
+            'abbreviation' =>  '14',
             'country_id' => 1,
 
             ],
             [
             'id' => '15',
-            'state' =>  'FCT',
-            'abreviation' =>  '37',
+            'name' =>  'FCT',
+            'abbreviation' =>  '37',
             'country_id' => 1,
 
             ],
             [
             'id' => '16',
-            'state' =>  'GOMBE',
-            'abreviation' =>  '15',
+            'name' =>  'GOMBE',
+            'abbreviation' =>  '15',
             'country_id' => 1,
 
             ],
             [
             'id' => '17',
-            'state' =>  'IMO',
-            'abreviation' =>  '16',
+            'name' =>  'IMO',
+            'abbreviation' =>  '16',
             'country_id' => 1,
 
             ],
             [
             'id' => '18',
-            'state' =>  'JIGAWA',
-            'abreviation' =>  '17',
+            'name' =>  'JIGAWA',
+            'abbreviation' =>  '17',
             'country_id' => 1,
 
             ],
             [
             'id' => '19',
-            'state' =>  'KADUNA',
-            'abreviation' =>  '18',
+            'name' =>  'KADUNA',
+            'abbreviation' =>  '18',
             'country_id' => 1,
 
             ],
             [
             'id' => '20',
-            'state' =>  'KANO',
-            'abreviation' =>  '19',
+            'name' =>  'KANO',
+            'abbreviation' =>  '19',
             'country_id' => 1,
 
             ],
             [
             'id' => '21',
-            'state' =>  'KATSINA',
-            'abreviation' =>  '20',
+            'name' =>  'KATSINA',
+            'abbreviation' =>  '20',
             'country_id' => 1,
 
             ],
             [
             'id' => '22',
-            'state' =>  'KEBBI',
-            'abreviation' =>  '21',
+            'name' =>  'KEBBI',
+            'abbreviation' =>  '21',
             'country_id' => 1,
 
             ],
             [
             'id' => '23',
-            'state' =>  'KOGI',
-            'abreviation' =>  '22',
+            'name' =>  'KOGI',
+            'abbreviation' =>  '22',
             'country_id' => 1,
 
             ],
             [
             'id' => '24',
-            'state' =>  'KWARA',
-            'abreviation' =>  '23',
+            'name' =>  'KWARA',
+            'abbreviation' =>  '23',
             'country_id' => 1,
 
             ],
             [
             'id' => '25',
-            'state' =>  'LAGOS',
-            'abreviation' =>  '24',
+            'name' =>  'LAGOS',
+            'abbreviation' =>  '24',
             'country_id' => 1,
 
             ],
             [
             'id' => '26',
-            'state' =>  'NASARAWA',
-            'abreviation' =>  '25',
+            'name' =>  'NASARAWA',
+            'abbreviation' =>  '25',
             'country_id' => 1,
 
             ],
             [
             'id' => '27',
-            'state' =>  'NIGER',
-            'abreviation' =>  '26',
+            'name' =>  'NIGER',
+            'abbreviation' =>  '26',
             'country_id' => 1,
 
             ],
             [
             'id' => '28',
-            'state' =>  'OGUN',
-            'abreviation' =>  '27',
+            'name' =>  'OGUN',
+            'abbreviation' =>  '27',
             'country_id' => 1,
 
             ],
             [
             'id' => '29',
-            'state' =>  'ONDO',
-            'abreviation' =>  '28',
+            'name' =>  'ONDO',
+            'abbreviation' =>  '28',
             'country_id' => 1,
 
             ],
             [
             'id' => '30',
-            'state' =>  'OSUN',
-            'abreviation' =>  '29',
+            'name' =>  'OSUN',
+            'abbreviation' =>  '29',
             'country_id' => 1,
 
             ],
             [
             'id' => '31',
-            'state' =>  'OYO',
-            'abreviation' =>  '30',
+            'name' =>  'OYO',
+            'abbreviation' =>  '30',
             'country_id' => 1,
 
             ],
             [
             'id' => '32',
-            'state' =>  'PLATEAU',
-            'abreviation' =>  '31',
+            'name' =>  'PLATEAU',
+            'abbreviation' =>  '31',
             'country_id' => 1,
 
             ],
             [
             'id' => '33',
-            'state' =>  'RIVERS',
-            'abreviation' =>  '32',
+            'name' =>  'RIVERS',
+            'abbreviation' =>  '32',
             'country_id' => 1,
 
             ],
             [
             'id' => '34',
-            'state' =>  'SOKOTO',
-            'abreviation' =>  '33',
+            'name' =>  'SOKOTO',
+            'abbreviation' =>  '33',
             'country_id' => 1,
 
             ],
             [
             'id' => '35',
-            'state' =>  'TARABA',
-            'abreviation' =>  '34',
+            'name' =>  'TARABA',
+            'abbreviation' =>  '34',
             'country_id' => 1,
 
             ],
             [
             'id' => '36',
-            'state' =>  'YOBE',
-            'abreviation' =>  '35',
+            'name' =>  'YOBE',
+            'abbreviation' =>  '35',
             'country_id' => 1,
 
             ],
             [
             'id' => '37',
-            'state' =>  'ZAMFARA',
-            'abreviation' =>  '36',
+            'name' =>  'ZAMFARA',
+            'abbreviation' =>  '36',
             'country_id' => 1,
 
             ]
         ];
 
-        DB::table('sup_state')->insert($data);
+        DB::table('states')->insert($data);
     }
 }

@@ -61678,6 +61678,6 @@ class TownSeeder extends Seeder
       ]
     ];
 
-    DB::table('towns')->insert($data);
+    foreach(array_chunk($data, 100) as $chunk) DB::table('towns')->insert($chunk);
   }
 }

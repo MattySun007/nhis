@@ -1633,9 +1633,7 @@ class LgaSeeder extends Seeder
                 'id' => '203',
                 'name' => 'Sapele',
                 'state_id' => '10',
-                'country_id' => '10',
-                'entered_by' => '3',
-                'last_modified_by' => '2017-11-28 11:40:00',
+                'country_id' => 1,
             ],
             [
                 'id' => '204',
@@ -5642,8 +5640,6 @@ class LgaSeeder extends Seeder
                 'name' => 'Tai',
                 'state_id' => '33',
                 'country_id' => 1,
-
-
             ],
             [
                 'id' => '705',
@@ -6206,7 +6202,6 @@ class LgaSeeder extends Seeder
 
             ]
         ];
-
-        DB::table('sup_lga')->insert($data);
+        foreach(array_chunk($data, 100) as $chunk) DB::table('lgas')->insert($chunk);
     }
 }

@@ -16,7 +16,7 @@ class CreateTownsTable extends Migration
         Schema::create('towns', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name', 100);
-            $table->string('abbreviation', 10);
+            $table->string('abbreviation', 30);
             $table->integer('state_id')->unsigned()->index();
             $table->integer('lga_id')->unsigned()->index();
 

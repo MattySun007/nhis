@@ -314,20 +314,20 @@ class BankSeeder extends Seeder
         'bank_type' => 'MICRO-FINANCE/AGRIC BANKS',
         'bank_name' => 'DOMINION MICROFINANCE BANK'
       ],
-      [
-        'id' => 44,
-        'cbn_code' => '178',
-        'cbn_code_main' => '178',
-        'bank_type' => 'MICRO-FINANCE/AGRIC BANKS',
-        'bank_name' => 'NIG AGRIC COOP AND DEV BANK'
-      ],
-      [
-        'id' => 45,
-        'cbn_code' => '177',
-        'cbn_code_main' => '177',
-        'bank_type' => 'MICRO-FINANCE/AGRIC BANKS',
-        'bank_name' => 'NIG AGRIC COOP AND DEV BANK'
-      ],
+      // [
+      //   'id' => 44,
+      //   'cbn_code' => '178',
+      //   'cbn_code_main' => '178',
+      //   'bank_type' => 'MICRO-FINANCE/AGRIC BANKS',
+      //   'bank_name' => 'NIG AGRIC COOP AND DEV BANK'
+      // ],
+      // [
+      //   'id' => 45,
+      //   'cbn_code' => '177',
+      //   'cbn_code_main' => '177',
+      //   'bank_type' => 'MICRO-FINANCE/AGRIC BANKS',
+      //   'bank_name' => 'NIG AGRIC COOP AND DEV BANK'
+      // ],
       [
         'id' => 46,
         'cbn_code' => '192',
@@ -629,13 +629,13 @@ class BankSeeder extends Seeder
         'bank_type' => 'MICRO-FINANCE/AGRIC BANKS',
         'bank_name' => 'UMUNYA MICRO FINANCE BANK LTD'
       ],
-      [
-        'id' => 89,
-        'cbn_code' => '180',
-        'cbn_code_main' => '180',
-        'bank_type' => 'MICRO-FINANCE/AGRIC BANKS',
-        'bank_name' => 'NIG AGRIC COOP AND DEV BANK'
-      ],
+      // [
+      //   'id' => 89,
+      //   'cbn_code' => '180',
+      //   'cbn_code_main' => '180',
+      //   'bank_type' => 'MICRO-FINANCE/AGRIC BANKS',
+      //   'bank_name' => 'NIG AGRIC COOP AND DEV BANK'
+      // ],
       [
         'id' => 90,
         'cbn_code' => '140',
