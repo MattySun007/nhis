@@ -25,5 +25,21 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
       Schema::defaultStringLength(191);
+
+      view()->composer('*', function ($view) {
+        if (auth()->user())
+        {
+          $name = auth()->user()->full_name;
+          $permissions = auth()->user()->permissions()->get();
+        } else
+        {
+          $name = 'Guest User';
+          $permissions = [];
+        }
+
+        $view->with('currentUserName', $name);
+        $view->with('currentPermissions', $permissions);
+        $view->with('pageTitle', $view->pageTitle ? $view->pageTitle : 'Page');
+      });
     }
 }

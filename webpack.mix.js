@@ -10,6 +10,16 @@ const mix = require('laravel-mix');
  | file for the application as well as bundling up all the JS files.
  |
  */
+const package = require('./package.json');
 
 mix.js('resources/js/app.js', 'public/js')
-   .sass('resources/sass/app.scss', 'public/css');
+  .extract(Object.keys(package.dependencies))
+  .sass('resources/sass/app.scss', 'public/css')
+  .version()
+  .babelConfig({
+    presets: [
+      'env',
+      'stage-2'
+    ]
+  })
+  .copy('resources/images/', 'public/images/');

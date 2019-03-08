@@ -37,4 +37,23 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function agencyUser()
+    {
+        return $this->hasOne(AgencyUser::class);
+    }
+
+    public function adoptees()
+    {
+        return $this->hasMany(Adoptee::class);
+    }
+
+    public function assignAgencyUserPermissions()
+    {
+        $this->givePermissionsTo(
+            'institution:read',
+            'institution:write',
+            'institution:delete'
+        );
+    }
 }
