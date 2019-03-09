@@ -21,33 +21,35 @@ Route::group(['middleware' => ['query_log']], function () {
     });
 
 
-    // Route::group(['middleware' => ['auth']], function () {
-    //     Route::match(['get', 'post'], 'logout', ['uses' => '\App\Http\Controllers\Auth\LoginController@logout', 'as' => 'logout']);
-    //     Route::get('dashboard', ['uses' => '\App\Http\Controllers\AdminController@index', 'as' => 'dashboard']);
+    Route::group(['middleware' => ['auth']], function () {
+        Route::match(['get', 'post'], 'logout', ['uses' => '\App\Http\Controllers\Auth\LoginController@logout', 'as' => 'logout']);
+        Route::get('/', ['uses' => '\App\Http\Controllers\HomeController@index', 'as' => 'dashboard']);
 
-    //     Route::get(
-    //         'institutions',
-    //         [
-    //             'uses' => '\App\Http\Controllers\InstitutionController@index',
-    //             'as' => 'InstitutionController@index',
-    //             'middleware' => 'permission:institutions:read'
-    //         ]
-    //     );
-    //     Route::post(
-    //         'institutions',
-    //         [
-    //             'uses' => '\App\Http\Controllers\InstitutionController@create',
-    //             'as' => 'InstitutionController@create',
-    //             'middleware' => 'permission:institutions:write'
-    //         ]
-    //     );
-    //     Route::put(
-    //         'institutions/{id}',
-    //         [
-    //             'uses' => '\App\Http\Controllers\InstitutionController@update',
-    //             'as' => 'InstitutionController@update',
-    //             'middleware' => 'permission:institutions:write'
-    //         ]
-    //     );
-    // });
+        Route::get(
+            'institutions',
+            [
+                'uses' => '\App\Http\Controllers\InstitutionController@index',
+                'as' => 'InstitutionController@index',
+                'middleware' => 'permission:institutions:read'
+            ]
+        );
+        Route::post(
+            'institutions',
+            [
+                'uses' => '\App\Http\Controllers\InstitutionController@create',
+                'as' => 'InstitutionController@create',
+                'middleware' => 'permission:institutions:write'
+            ]
+        );
+        Route::put(
+            'institutions/{id}',
+            [
+                'uses' => '\App\Http\Controllers\InstitutionController@update',
+                'as' => 'InstitutionController@update',
+                'middleware' => 'permission:institutions:write'
+            ]
+        );
+    });
 });
+
+Auth::routes();
