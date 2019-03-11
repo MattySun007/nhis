@@ -57,10 +57,24 @@ class User extends Authenticatable
 
     public function assignAgencyUserPermissions()
     {
-        $this->givePermissionsTo(
+        $this->givePermissions(
             'institutions:read',
-            'institutions:write',
-            'institutions:delete'
+            'institutions:create',
+            'institutions:update',
+            'institutions:delete',
+            'hcps:create',
+            'hcps:read',
+            'hcp-users:create'
+        );
+    }
+
+    public function assignHcpUserPermissions()
+    {
+        $this->givePermissions(
+            'hcps:create',
+            'hcps:update',
+            'hcps:read',
+            'hcp-users:create'
         );
     }
 }

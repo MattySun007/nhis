@@ -1,18 +1,18 @@
 <template>
   <Page>
-    <page-title title="Institutions"/>
+    <page-title title="HCPs"/>
     <div class="row">
       <div class="col-sm-12">
         <div class="panel panel-inverse">
           <div class="panel-heading">
-            <h4 class="panel-title">Institutions</h4>
+            <h4 class="panel-title">HCPs</h4>
           </div>
           <div class="panel-body">
             <button
               v-if="canCreate"
               class="btn btn-sm btn-secondary"
               @click.stop.prevent="view(null)"
-            >Add institution</button>
+            >Add HCP</button>
             <div class="table-responsive">
               <table class="table table-striped m-b-0">
                 <thead>
@@ -21,22 +21,20 @@
                     <th>Name</th>
                     <th>Phone</th>
                     <th>Email</th>
-                    <th>RCC number</th>
                     <th>Country</th>
                     <th>Address</th>
                     <th v-if="canUpdate">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-if="!localInstitutions.length">
-                    <td colspan="9" class="text-center">No institutions</td>
+                  <tr v-if="!localHcps.length">
+                    <td colspan="9" class="text-center">No hcps</td>
                   </tr>
-                  <tr v-for="i in localInstitutions" :key="i.id">
+                  <tr v-for="i in localHcps" :key="i.id">
                     <td>{{ i.code }}</td>
                     <td>{{ i.name }}</td>
                     <td>{{ i.phone }}</td>
                     <td>{{ i.email }}</td>
-                    <td>{{ i.rcc_number }}</td>
                     <td>{{ i.country_id }}</td>
                     <td>{{ i.address }}</td>
                     <td v-if="canUpdate" class="with-btn" nowrap>
@@ -77,37 +75,31 @@
                 <div class="form-group row">
                   <label class="control-label col-md-4 col-sm-4">Name *</label>
                   <div class="col-md-6 col-sm-6">
-                    <input type="text" class="form-control" v-model.trim="institution.name">
+                    <input type="text" class="form-control" v-model.trim="hcp.name">
                   </div>
                 </div>
                 <div class="form-group row">
                   <label class="control-label col-md-4 col-sm-4">Code *</label>
                   <div class="col-md-6 col-sm-6">
-                    <input type="text" class="form-control" v-model.trim="institution.code">
+                    <input type="text" class="form-control" v-model.trim="hcp.code">
                   </div>
                 </div>
                 <div class="form-group row">
                   <label class="control-label col-md-4 col-sm-4">Phone *</label>
                   <div class="col-md-6 col-sm-6">
-                    <input type="text" class="form-control" v-model.trim="institution.phone">
+                    <input type="text" class="form-control" v-model.trim="hcp.phone">
                   </div>
                 </div>
                 <div class="form-group row">
                   <label class="control-label col-md-4 col-sm-4">Email *</label>
                   <div class="col-md-6 col-sm-6">
-                    <input type="email" class="form-control" v-model.trim="institution.email">
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label class="control-label col-md-4 col-sm-4">RCC number</label>
-                  <div class="col-md-6 col-sm-6">
-                    <input type="text" class="form-control" v-model.trim="institution.rcc_number">
+                    <input type="email" class="form-control" v-model.trim="hcp.email">
                   </div>
                 </div>
                 <div class="form-group row">
                   <label class="control-label col-md-4 col-sm-4">Address *</label>
                   <div class="col-md-6 col-sm-6">
-                    <input type="text" class="form-control" v-model.trim="institution.address">
+                    <input type="text" class="form-control" v-model.trim="hcp.address">
                   </div>
                 </div>
                 <div class="form-group row">
@@ -176,7 +168,7 @@ import PageTitle from '../components/header/PageTitle';
 import AlertMixin from '../mixins/AlertMixin';
 import PermissionMixin from '../mixins/PermissionMixin';
 
-const defaultInstitution = {
+const defaultHcp = {
   code: '',
   name: '',
   country_id: null,
@@ -186,19 +178,18 @@ const defaultInstitution = {
   active: 1,
   email: '',
   phone: '',
-  address: '',
-  rcc_number: ''
+  address: ''
 };
 
 export default {
-  name: 'Institutions',
+  name: 'Hcps',
   components: {
     Page,
     PageTitle
   },
   mixins: [AlertMixin, PermissionMixin],
   props: {
-    institutions: {
+    hcps: {
       type: Array,
       required: true
     },
@@ -219,9 +210,9 @@ export default {
     return {
       canCreate: false,
       canUpdate: false,
-      localInstitutions: this.institutions,
+      localHcps: this.hcps,
       towns: [],
-      institution: { ...defaultInstitution },
+      hcp: { ...defaultHcp },
       selectedTitle: '',
       country: { country: '' },
       state: { name: '' },
@@ -244,11 +235,11 @@ export default {
     },
     formOk() {
       const {
-        localInstitutions,
+        localHcps,
         filteredStates,
         filteredLgas,
         countries,
-        institution: {
+        hcp: {
           id = 0,
           code,
           name,
@@ -259,16 +250,16 @@ export default {
           lga_id,
           town_id,
           active,
-          address,
-          rcc_number
+          address
         }
       } = this;
-      const insts = localInstitutions.filter(i => id !== i.id);
+      const hcps = localHcps.filter(i => id !== i.id);
 
-      const nameOk = !!name.length && insts.every(i => i.name !== name);
-      const codeOk = !!code.length && insts.every(i => i.code !== code);
-      const phoneOk = !!phone.length && insts.every(i => i.phone !== phone);
-      const emailOk = !!email.length && insts.every(i => i.email !== email);
+      const nameOk = !!name.length && hcps.every(i => i.name !== name);
+      const codeOk = !!code.length && hcps.every(i => i.code !== code);
+      const emailAndPhoneOk = !!phone.length &&
+        !!email.length &&
+        hcps.every(i => i.phone !== phone && i.email !== email);
       const addressOk = !!address.length;
       const countryOk = countries.some(({ id }) => id === country_id);
       const stateOk = filteredStates.some(({ id }) => id === state_id);
@@ -276,8 +267,7 @@ export default {
 
       return nameOk &&
         codeOk &&
-        phoneOk &&
-        emailOk &&
+        emailAndPhoneOk &&
         addressOk &&
         countryOk &&
         stateOk &&
@@ -286,26 +276,26 @@ export default {
   },
   watch: {
     country(country) {
-      this.institution.country_id = country && country.id ? country.id : null;
+      this.hcp.country_id = country && country.id ? country.id : null;
     },
     state(state) {
       if (state && state.id) {
-        this.institution.state_id = state.id;
+        this.hcp.state_id = state.id;
         this.fetchTowns();
       } else {
-        this.institution.state_id = null;
+        this.hcp.state_id = null;
       }
     },
     lga(lga) {
-      this.institution.lga_id = lga && lga.id ? lga.id : null;
+      this.hcp.lga_id = lga && lga.id ? lga.id : null;
     },
     town(town) {
-      this.institution.town_id = town && town.id ? town.id : null;
+      this.hcp.town_id = town && town.id ? town.id : null;
     }
   },
   mounted() {
-    this.canCreate = this.hasPermission('institutions:create');
-    this.canUpdate = this.hasPermission('institutions:update');
+    this.canCreate = this.hasPermission('hcps:create');
+    this.canUpdate = this.hasPermission('hcps:update');
   },
   methods: {
     fetchTowns() {
@@ -315,37 +305,36 @@ export default {
         .get(`/options/towns/${this.state.id}`)
         .then(({ data: { towns } }) => {
           this.towns = towns;
-          if (!!this.institution.country_id) this.town = towns.find(({ id }) => id === this.institution.town_id);
+          if (!!this.hcp.country_id) this.town = towns.find(({ id }) => id === this.hcp.town_id);
         });
     },
     save() {
-      const copy = { ...this.institution };
+      const copy = { ...this.hcp };
       copy.name = copy.name.toUpperCase();
       copy.code = copy.code.toUpperCase();
-      copy.rcc_number = copy.rcc_number.toUpperCase();
 
       if (copy.id) {
         axios
-        .put(`/institutions/${copy.id}`, copy)
+        .put(`/hcps/${copy.id}`, copy)
         .then(({ data: { success, data, message = 'Could not update' } }) => {
           this.showToast(message, success);
           if (success) {
             $(this.$refs.instModal).modal('hide');
-            this.localInstitutions = this.localInstitutions.map((institution) => {
-              if (data.id === institution.id) return data;
-              return institution;
+            this.localHcps = this.localHcps.map((hcp) => {
+              if (data.id === hcp.id) return data;
+              return hcp;
             });
           }
         });
       } else {
         axios
-        .post('/institutions', copy)
+        .post('/hcps', copy)
         .then(({ data: { success, data, message = 'Could not create' } }) => {
           this.showToast(message, success);
           if (success) {
             $(this.$refs.instModal).modal('hide');
-            this.localInstitutions.push(data);
-            this.institution = { ...defaultInstitution };
+            this.localHcps.push(data);
+            this.hcp = { ...defaultHcp };
           }
         });
       }
@@ -356,37 +345,37 @@ export default {
         this.country = this.countries.find(({ id }) => id === inst.country_id) || {};
         this.state = this.states.find(({ id }) => id === inst.state_id) || {};
         this.lga = this.lgas.find(({ id }) => id === inst.lga_id) || {};
-        this.institution = { ...inst };
+        this.hcp = { ...inst };
       } else {
-        this.selectedTitle = 'Create institution';
+        this.selectedTitle = 'Create hcp';
         this.state = {};
         this.lga = {};
-        this.institution = { ...defaultInstitution };
+        this.hcp = { ...defaultHcp };
       }
       $(this.$refs.instModal).modal('show');
     },
     deactivate(inst) {
       axios
-      .put(`/institutions/${inst.id}`, { active: 0 })
+      .put(`/hcps/${inst.id}`, { active: 0 })
       .then(({ data: { success, data } }) => {
         if (success) {
-          this.showToast('Institution deactivated');
-          this.localInstitutions = this.localInstitutions.map((institution) => {
-            if (data.id === institution.id) return data;
-            return institution;
+          this.showToast('Hcp deactivated');
+          this.localHcps = this.localHcps.map((hcp) => {
+            if (data.id === hcp.id) return data;
+            return hcp;
           });
         }
       });
     },
     activate(inst) {
       axios
-      .put(`/institutions/${inst.id}`, { active: 1 })
+      .put(`/hcps/${inst.id}`, { active: 1 })
       .then(({ data: { success, data } }) => {
         if (success) {
-          this.showToast('Institution activated');
-          this.localInstitutions = this.localInstitutions.map((institution) => {
-            if (data.id === institution.id) return data;
-            return institution;
+          this.showToast('Hcp activated');
+          this.localHcps = this.localHcps.map((hcp) => {
+            if (data.id === hcp.id) return data;
+            return hcp;
           });
         }
       });

@@ -23,7 +23,7 @@ trait HasPermission
     return Permission::whereIn('name', $permissions)->get();
   }
 
-  public function givePermissionsTo(... $permissions)
+  public function givePermissions(... $permissions)
   {
     $permissions = $this->getAllPermissions($permissions);
 

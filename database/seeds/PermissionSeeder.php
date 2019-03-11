@@ -19,15 +19,31 @@ class PermissionSeeder extends Seeder
       ],
       [
           'id' => 2,
-          'name' => 'institutions:write'
+          'name' => 'institutions:create'
       ],
       [
           'id' => 3,
-          'name' => 'institutions:read'
+          'name' => 'institutions:update'
       ],
       [
           'id' => 4,
+          'name' => 'institutions:read'
+      ],
+      [
+          'id' => 5,
           'name' => 'institutions:delete'
+      ],
+      [
+          'id' => 6,
+          'name' => 'hcps:create'
+      ],
+      [
+          'id' => 7,
+          'name' => 'hcps:read'
+      ],
+      [
+          'id' => 8,
+          'name' => 'hcp-user:create'
       ]
     ];
 

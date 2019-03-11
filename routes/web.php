@@ -17,11 +17,11 @@ Route::group(['middleware' => ['query_log']], function () {
         Route::get('institutions', ['uses' => '\App\Http\Controllers\InstitutionController@index', 'as' => 'InstitutionController@index']);
         Route::post('institutions', ['uses' => '\App\Http\Controllers\InstitutionController@create', 'as' => 'InstitutionController@create']);
         Route::put('institutions/{id}', ['uses' => '\App\Http\Controllers\InstitutionController@update', 'as' => 'InstitutionController@update']);
-        Route::get('options/towns/{stateId}', ['uses' => '\App\Http\Controllers\OptionController@towns', 'as' => 'OptionController@towns']);
     });
 
 
     Route::group(['middleware' => ['auth']], function () {
+        Route::get('options/towns/{stateId}', ['uses' => '\App\Http\Controllers\OptionController@towns', 'as' => 'OptionController@towns']);
         Route::match(['get', 'post'], 'logout', ['uses' => '\App\Http\Controllers\Auth\LoginController@logout', 'as' => 'logout']);
         Route::get('/', ['uses' => '\App\Http\Controllers\HomeController@index', 'as' => 'dashboard']);
 
@@ -38,7 +38,7 @@ Route::group(['middleware' => ['query_log']], function () {
             [
                 'uses' => '\App\Http\Controllers\InstitutionController@create',
                 'as' => 'InstitutionController@create',
-                'middleware' => 'permission:institutions:write'
+                'middleware' => 'permission:institutions:create'
             ]
         );
         Route::put(
@@ -46,7 +46,32 @@ Route::group(['middleware' => ['query_log']], function () {
             [
                 'uses' => '\App\Http\Controllers\InstitutionController@update',
                 'as' => 'InstitutionController@update',
-                'middleware' => 'permission:institutions:write'
+                'middleware' => 'permission:institutions:update'
+            ]
+        );
+
+        Route::get(
+            'hcps',
+            [
+                'uses' => '\App\Http\Controllers\HcpController@index',
+                'as' => 'HcpController@index',
+                'middleware' => 'permission:hcps:read'
+            ]
+        );
+        Route::post(
+            'hcps',
+            [
+                'uses' => '\App\Http\Controllers\HcpController@create',
+                'as' => 'HcpController@create',
+                'middleware' => 'permission:hcps:create'
+            ]
+        );
+        Route::put(
+            'hcps/{id}',
+            [
+                'uses' => '\App\Http\Controllers\HcpController@update',
+                'as' => 'HcpController@update',
+                'middleware' => 'permission:hcps:update'
             ]
         );
     });

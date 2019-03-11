@@ -23,7 +23,7 @@ class PermissionTest extends TestCase
     {
         $permission = factory(Permission::class)->create();
         $user = factory(User::class)->create();
-        $user->givePermissionsTo($permission->name);
+        $user->givePermissions($permission->name);
 
         $this->assertTrue($user->hasPermission($permission));
         $this->assertTrue($user->hasPermission($permission->name));
