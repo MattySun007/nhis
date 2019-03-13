@@ -74,6 +74,31 @@ Route::group(['middleware' => ['query_log']], function () {
                 'middleware' => 'permission:hcps:update'
             ]
         );
+
+        Route::get(
+            'hcps/{id}/users',
+            [
+                'uses' => '\App\Http\Controllers\HcpController@indexUsers',
+                'as' => 'HcpController@indexUsers',
+                'middleware' => 'permission:hcp-users:read'
+            ]
+        );
+        Route::post(
+            'hcps/{id}/users',
+            [
+                'uses' => '\App\Http\Controllers\HcpController@createUser',
+                'as' => 'HcpController@createUser',
+                'middleware' => 'permission:hcp-users:create'
+            ]
+        );
+        Route::put(
+            'hcps/{id}/users/{userId}',
+            [
+                'uses' => '\App\Http\Controllers\HcpController@updateUser',
+                'as' => 'HcpController@updateUser',
+                'middleware' => 'permission:hcp-users:update'
+            ]
+        );
     });
 });
 

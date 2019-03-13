@@ -23,7 +23,7 @@
                     <th>Email</th>
                     <th>Country</th>
                     <th>Address</th>
-                    <th v-if="canUpdate">Actions</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -37,21 +37,23 @@
                     <td>{{ i.email }}</td>
                     <td>{{ i.country_id }}</td>
                     <td>{{ i.address }}</td>
-                    <td v-if="canUpdate" class="with-btn" nowrap>
+                    <td class="with-btn" nowrap>
                       <button
+                        v-if="canUpdate"
                         @click.stop.prevent="view(i)"
                         class="btn btn-sm btn-secondary m-r-2"
                       >View/Edit</button>
                       <button
-                        v-if="i.active"
+                        v-if="i.active && canUpdate"
                         @click.stop.prevent="deactivate(i)"
                         class="btn btn-sm btn-white"
                       >Deactivate</button>
                       <button
-                        v-else
+                        v-else-if="canUpdate"
                         @click.stop.prevent="activate(i)"
                         class="btn btn-sm btn-secondary"
                       >Activate</button>
+                      <a :href="hcpUsersLink(i)" class="btn btn-sm btn-white">Users</a>
                     </td>
                   </tr>
                 </tbody>
@@ -379,6 +381,9 @@ export default {
           });
         }
       });
+    },
+    hcpUsersLink({ id }) {
+      return `/hcps/${id}/users`;
     }
   }
 }

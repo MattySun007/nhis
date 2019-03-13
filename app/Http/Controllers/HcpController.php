@@ -2,13 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use Validator;
-use Illuminate\Validation\Rule;
+use Log;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Models\Hcp;
+use App\Models\HcpUser;
 use App\Models\Country;
 use App\Models\State;
 use App\Models\Lga;
+use App\Models\MaritalStatus;
+use App\Models\Gender;
+use App\Models\BloodGroup;
+use App\Models\Genotype;
+use Illuminate\Support\Str;
 
 class HcpController extends Controller
 {
@@ -27,17 +33,7 @@ class HcpController extends Controller
   public function create()
   {
     $data = $this->request->all();
-    $validator = Validator::make($data, [
-      'code' => 'required|string|max:20|unique:hcps',
-      'name' => 'required|string|max:45|unique:hcps',
-      'address' => 'required|string|max:125',
-      'country_id' => 'required|exists:countries,id',
-      'state_id' => 'required|exists:states,id',
-      'lga_id' => 'required|exists:lgas,id',
-      'town_id' => 'exists:towns,id',
-      'email' => 'required|email|max:125|unique:hcps',
-      'phone' => 'regex:/^\d{7,11}$/|max:15|unique:hcps'
-    ]);
+    $validator = Hcp::creationValidator($data);
     if ($validator->fails()) {
       return response()->json([
         'success' => false,
@@ -61,29 +57,7 @@ class HcpController extends Controller
   public function update($id)
   {
     $data = $this->request->all();
-    $validator = Validator::make($data, [
-      'address' => 'string|max:125',
-      'name' => 'string|max:45',
-      'country_id' => 'exists:countries,id',
-      'state_id' => 'exists:states,id',
-      'lga_id' => 'exists:lgas,id',
-      'town_id' => 'exists:towns,id',
-      'code' => [
-        'string',
-        'max:20',
-        Rule::unique('hcps')->ignore($id)
-      ],
-      'email' => [
-        'email',
-        'max:125',
-        Rule::unique('hcps')->ignore($id)
-      ],
-      'phone' => [
-        'regex:/^\d{7,11}$/',
-        'max:15',
-        Rule::unique('hcps')->ignore($id)
-      ]
-    ]);
+    $validator = Hcp::updateValidator($data, $id);
     if ($validator->fails()) {
       return response()->json([
         'success' => false,
@@ -102,6 +76,104 @@ class HcpController extends Controller
         'success' => true,
         'message' => 'Hcp updated',
         'data' => $hcp
+    ]);
+  }
+
+  public function indexUsers($id)
+  {
+    $hcp = Hcp::find($id);
+    // Hcp::where('id', $hcpId); Same thing
+
+    return view('hcps.list-users', [
+      'pageTitle' => 'HCP users',
+      'hcp' => $hcp,
+      'maritalStatuses' => MaritalStatus::all(),
+      'genders' => Gender::all(),
+      'genotypes' => Genotype::all(),
+      'bloodGroups' => BloodGroup::all(),
+      'users' => $hcp->users()->with('user')->get()
+    ]);
+  }
+
+  public function createUser($id)
+  {
+    $hcp = Hcp::find($id);
+
+    if (empty($hcp))
+    {
+      return response()->json([
+        'success' => false,
+        'message' => 'HCP not found',
+      ], 400);
+    }
+
+    $data = $this->request->all();
+    $validator = User::creationValidator($data);
+    if ($validator->fails()) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Validation failed',
+        'data' => $validator->errors()->messages()
+      ], 422);
+    }
+
+    // Create password if none is provided
+    if(!isset($data['password']) )
+    {
+      $defaultPassword = Str::random(10);
+      $data['password'] = $defaultPassword;
+      $userStr = "(email: {$data['email']}, phone: {$data['phone']})";
+      Log::warning("Assigned '$defaultPassword' as default password to $userStr"); // Log so we can easily retrieve
+    }
+
+    // Create user first
+    User::unguard();
+    $user = new User($data);
+    User::reguard();
+    $user->save();
+    $user->assignHcpUserPermissions();
+
+    // Now, create hcp_user
+    $hcpUser = new HcpUser();
+    $hcpUser->user_id = $user->id;
+    $hcpUser->hcp_id = $hcp->id;
+    $hcpUser->save();
+
+    $hcpUser->loadMissing('user'); // The front-end expects the user to be loaded
+
+    return response()->json([
+      'success' => true,
+      'message' => 'Hcp user created',
+      'data' => $hcpUser
+    ]);
+  }
+
+  public function updateUser($id, $userId)
+  {
+    $data = $this->request->all();
+    $hcpUser = HcpUser::find($userId);
+
+    $validator = User::updateValidator($data, $hcpUser->user_id);
+    if ($validator->fails()) {
+      return response()->json([
+        'success' => false,
+        'message' => 'Validation failed',
+        'data' => $validator->errors()->messages()
+      ], 422);
+    }
+
+    $user = User::find($hcpUser->user_id);
+    User::unguard();
+    $user->fill($data);
+    User::reguard();
+    $user->save();
+
+    $hcpUser->loadMissing('user'); // The front-end expects the user to be loaded
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Hcp user updated',
+        'data' => $hcpUser
     ]);
   }
 }
