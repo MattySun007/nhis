@@ -9,7 +9,7 @@
 				<div class="info">
 					<b class="caret pull-right"></b>
 					{{ name }}
-					<small>Front end developer</small>
+					<small>{{ user_type }}</small>
 				</div>
 			</a>
 		</li>
@@ -30,11 +30,13 @@ export default {
 	data() {
 		return {
 			stat: '',
-			name: ''
+			name: '',
+      user_type: ''
 		}
 	},
   mounted() {
     this.name = document.querySelector('meta[name="current-user-name"]').content;
+    this.user_type = document.querySelector('meta[name="current-user-type"]').content;
   },
 	methods: {
 		expand: function() {

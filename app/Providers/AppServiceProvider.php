@@ -30,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
         if (auth()->user())
         {
           $name = auth()->user()->full_name;
+          $user_type = auth()->user()->user_type;
           $permissions = auth()->user()->permissions()->get();
         } else
         {
@@ -38,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $view->with('currentUserName', $name);
+        $view->with('currentUserType', $user_type);
         $view->with('currentPermissions', $permissions);
         $view->with('pageTitle', $view->pageTitle ? $view->pageTitle : 'Page');
       });

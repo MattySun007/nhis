@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="current-user-name" content="{{ $currentUserName }}">
+        <meta name="current-user-type" content="{{ $currentUserType }}">
         <meta name="permissions" content="{{ json_encode($currentPermissions) }}">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="shortcut icon" href="{{ asset('images/favicon.png') }}">
