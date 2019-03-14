@@ -126,18 +126,7 @@ class HcpController extends Controller
       Log::warning("Assigned '$defaultPassword' as default password to $userStr"); // Log so we can easily retrieve
     }
 
-    // Create user first
-    User::unguard();
-    $user = new User($data);
-    User::reguard();
-    $user->save();
-    $user->assignHcpUserPermissions();
-
-    // Now, create hcp_user
-    $hcpUser = new HcpUser();
-    $hcpUser->user_id = $user->id;
-    $hcpUser->hcp_id = $hcp->id;
-    $hcpUser->save();
+    $hcpUser = User::createHcpUser($hcp, $data);
 
     $hcpUser->loadMissing('user'); // The front-end expects the user to be loaded
 

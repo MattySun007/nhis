@@ -8,6 +8,8 @@ class HcpUser extends Model
 {
     protected $table = 'hcp_user';
 
+    protected $fillable = ['user_id', 'hcp_id'];
+
     public function user()
     {
         return $this->belongsTo(User::class);

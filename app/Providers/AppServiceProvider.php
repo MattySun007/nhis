@@ -35,6 +35,7 @@ class AppServiceProvider extends ServiceProvider
         } else
         {
           $name = 'Guest User';
+          $user_type = 'Unknown';
           $permissions = [];
         }
 

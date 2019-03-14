@@ -88,17 +88,27 @@ class User extends Authenticatable
 
   public function getUserTypeAttribute()
   {
-    $user_type = "Individual Contributor";
-    if($this->isAgencyUser()){
-      $user_type = "Agency User";
-    }elseif($this->isInstitutionUser()){
-      $user_type = "Institution User";
-    }elseif($this->isHcpUser()){
-      $user_type = "Hcp User";
-    }elseif($this->isAdoptee()){
-      $user_type = "Adoptee";
+    if ($this->isAgencyUser())
+    {
+      return "Agency User";
     }
-    return $user_type;
+
+    if ($this->isInstitutionUser())
+    {
+      return "Institution User";
+    }
+
+    if ($this->isHcpUser())
+    {
+      return "Hcp User";
+    }
+
+    if ($this->isAdoptee())
+    {
+      return "Adoptee";
+    }
+
+    return "Individual Contributor";
   }
 
   public function adoptees()
@@ -222,5 +232,23 @@ class User extends Authenticatable
     return Validator::make($data, $rules);
   }
 
+  public static function createHcpUser(Hcp $hcp, array $data)
+  {
+    User::unguard();
+    $user = User::create($data);
+    User::reguard();
+    $user->assignHcpUserPermissions();
+
+    return HcpUser::create(['user_id' => $user->id, 'hcp_id' => $hcp->id]);
+  }
+
+  public static function createAgencyUser(array $data)
+  {
+    User::unguard();
+    $user = User::create($data);
+    User::reguard();
+    $user->assignAgencyUserPermissions();
+    return AgencyUser::create(['user_id' => $user->id]);
+  }
 
 }

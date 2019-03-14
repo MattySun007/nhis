@@ -15,7 +15,7 @@ class UserSeeder extends Seeder
       'email' => 'agency@user.com',
       'phone' => '08012223333'
     ];
-    $user = factory(User::class)->create($params)->all()[0];
-    $user->assignAgencyUserPermissions();
+
+    User::createAgencyUser(factory(User::class)->make($params)->getAttributes());
   }
 }
