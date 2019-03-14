@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Hcp;
 use App\Models\HcpUser;
 use App\Models\Country;
+use App\Models\HcpType;
 use App\Models\State;
 use App\Models\Lga;
 use App\Models\MaritalStatus;
@@ -25,6 +26,7 @@ class HcpController extends Controller
       'pageTitle' => 'HCPs',
       'hcps' => Hcp::all(),
       'countries' => Country::all(),
+      'hcp_types' => HcpType::all(),
       'states' => State::all(),
       'lgas' => Lga::all()
     ]);

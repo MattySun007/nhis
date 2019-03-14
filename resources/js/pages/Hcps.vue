@@ -21,6 +21,7 @@
                     <th>Name</th>
                     <th>Phone</th>
                     <th>Email</th>
+                    <th>Type</th>
                     <th>Country</th>
                     <th>Address</th>
                     <th>Actions</th>
@@ -35,6 +36,7 @@
                     <td>{{ i.name }}</td>
                     <td>{{ i.phone }}</td>
                     <td>{{ i.email }}</td>
+                    <td>{{ i.hcp_type_id }}</td>
                     <td>{{ i.country_id }}</td>
                     <td>{{ i.address }}</td>
                     <td class="with-btn" nowrap>
@@ -102,6 +104,17 @@
                   <label class="control-label col-md-4 col-sm-4">Address *</label>
                   <div class="col-md-6 col-sm-6">
                     <input type="text" class="form-control" v-model.trim="hcp.address">
+                  </div>
+                </div>
+                <div class="form-group row">
+                  <label class="control-label col-md-4 col-sm-4">Hcp Type *</label>
+                  <div class="col-md-6 col-sm-6">
+                    <v-select
+                      placeholder="Select hcp_type"
+                      label="hcp_type"
+                      :options="hcp_types"
+                      v-model="hcp_type"
+                    />
                   </div>
                 </div>
                 <div class="form-group row">
@@ -173,6 +186,7 @@ import PermissionMixin from '../mixins/PermissionMixin';
 const defaultHcp = {
   code: '',
   name: '',
+  hcp_type: '',
   country_id: null,
   state_id: null,
   lga_id: null,
@@ -199,6 +213,10 @@ export default {
       type: Array,
       required: true
     },
+    hcp_types: {
+      type: Array,
+      required: true
+    },
     states: {
       type: Array,
       required: true
@@ -216,6 +234,7 @@ export default {
       towns: [],
       hcp: { ...defaultHcp },
       selectedTitle: '',
+      hcp_type: { hcp_type: '' },
       country: { country: '' },
       state: { name: '' },
       lga: { name: '' },
@@ -240,6 +259,7 @@ export default {
         localHcps,
         filteredStates,
         filteredLgas,
+        hcp_types,
         countries,
         hcp: {
           id = 0,
@@ -247,6 +267,7 @@ export default {
           name,
           email,
           phone,
+          hcp_type_id,
           country_id,
           state_id,
           lga_id,
@@ -263,6 +284,7 @@ export default {
         !!email.length &&
         hcps.every(i => i.phone !== phone && i.email !== email);
       const addressOk = !!address.length;
+      const hcp_typeOk = hcp_types.some(({ id }) => id === hcp_type_id);
       const countryOk = countries.some(({ id }) => id === country_id);
       const stateOk = filteredStates.some(({ id }) => id === state_id);
       const lgaOk = filteredLgas.some(({ id }) => id === lga_id);
@@ -271,6 +293,7 @@ export default {
         codeOk &&
         emailAndPhoneOk &&
         addressOk &&
+        hcp_typeOk &&
         countryOk &&
         stateOk &&
         lgaOk;
@@ -279,6 +302,9 @@ export default {
   watch: {
     country(country) {
       this.hcp.country_id = country && country.id ? country.id : null;
+    },
+    hcp_type(hcp_type) {
+      this.hcp.hcp_type_id = hcp_type && hcp_type.id ? hcp_type.id : null;
     },
     state(state) {
       if (state && state.id) {
@@ -345,6 +371,7 @@ export default {
       if (inst) {
         this.selectedTitle = `Update ${inst.name}`;
         this.country = this.countries.find(({ id }) => id === inst.country_id) || {};
+        this.hcp_type = this.hcp_types.find(({ id }) => id === inst.hcp_type_id) || {};
         this.state = this.states.find(({ id }) => id === inst.state_id) || {};
         this.lga = this.lgas.find(({ id }) => id === inst.lga_id) || {};
         this.hcp = { ...inst };

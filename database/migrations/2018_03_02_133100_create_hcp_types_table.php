@@ -14,7 +14,7 @@ class CreateHcpTypesTable extends Migration
     public function up()
     {
         Schema::create('hcp_types', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->increments('id');
             $table->string('hcp_type', 20)->unique();
             $table->timestamps();
         });

@@ -238,7 +238,6 @@ class User extends Authenticatable
     $user = User::create($data);
     User::reguard();
     $user->assignHcpUserPermissions();
-
     return HcpUser::create(['user_id' => $user->id, 'hcp_id' => $hcp->id]);
   }
 
