@@ -31,5 +31,27 @@ class PermissionSeeder extends Seeder
     Permission::create(['name' => 'institution-users:delete']);
     Permission::create(['name' => 'institution-users:update']);
     Permission::create(['name' => 'institution-users:read']);
+    Permission::create(['name' => 'individual-contributors:create']);
+    Permission::create(['name' => 'individual-contributors:update']);
+    Permission::create(['name' => 'individual-contributors:delete']);
+    Permission::create(['name' => 'individual-contributors:read']);
+    Permission::create(['name' => 'institution-hcp:read']);
+    Permission::create(['name' => 'institution-hcp:create']);
+    Permission::create(['name' => 'institution-hcp:delete']);
+    Permission::create(['name' => 'contributions:create']);
+    Permission::create(['name' => 'contributions:update']);
+    Permission::create(['name' => 'contributions:delete']);
+    Permission::create(['name' => 'contributions:read']);
+    Permission::create(['name' => 'contributions:manage']);
+    Permission::create(['name' => 'treatments:create']);
+    Permission::create(['name' => 'treatments:update']);
+    Permission::create(['name' => 'treatments:delete']);
+    Permission::create(['name' => 'treatments:read']);
+    Permission::create(['name' => 'claims:read']);
+    Permission::create(['name' => 'claims:manage']);
+    Permission::create(['name' => 'agency-users:create']);
+    Permission::create(['name' => 'agency-users:update']);
+    Permission::create(['name' => 'agency-users:read']);
+    Permission::create(['name' => 'agency-users:delete']);
   }
 }

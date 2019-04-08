@@ -1,19 +1,18 @@
 <template>
   <Page>
-    <page-title title="HCPs"/>
+    <page-title title="Users/Contributors"/>
     <div class="row">
       <div class="col-sm-12">
         <div class="panel panel-inverse">
           <div class="panel-heading">
-            <h4 class="panel-title">{{ hcp_name }} - HCP users</h4>
+            <h4 class="panel-title">{{ pageTitle }}</h4>
           </div>
           <div class="panel-body">
             <button
-              v-if="canCreate"
+              v-if="(itemTitle === 'Individual Contributor' && canCreateIndividualContributor) || (itemTitle === 'Agency User' && canCreateAgencyUser)"
               class="btn btn-sm btn-secondary"
               @click.stop.prevent="view(null)"
-            >Add HCP user</button>
-            <a v-if="canViewHcps" :href="viewHcps()" class="btn btn-sm btn-secondary">Back to HCPs</a>
+            >Add {{ itemTitle }}</button>
             <div class="table-responsive">
               <table class="table table-striped m-b-0">
                 <thead>
@@ -36,25 +35,25 @@
                   <td colspan="11" class="text-center">No users</td>
                 </tr>
                 <tr v-for="i in localUsers" :key="i.id">
-                  <td>{{ i.user.first_name }}</td>
-                  <td>{{ i.user.last_name }}</td>
-                  <td>{{ i.user.phone }}</td>
-                  <td>{{ i.user.email }}</td>
-                  <td>{{ i.user.verification_no }}</td>
-                  <td>{{ i.user.contribution_amount }}</td>
-                  <td>{{ i.user.blood_group.blood_group }}</td>
-                  <td>{{ i.user.gender.gender }}</td>
-                  <td>{{ i.user.genotype.genotype }}</td>
-                  <td>{{ i.user.marital_status.marital_status }}</td>
+                  <td>{{ i.first_name }}</td>
+                  <td>{{ i.last_name }}</td>
+                  <td>{{ i.phone }}</td>
+                  <td>{{ i.email }}</td>
+                  <td>{{ i.verification_no }}</td>
+                  <td>{{ i.contribution_amount }}</td>
+                  <td>{{ i.blood_group ? i.blood_group.blood_group : '' }}</td>
+                  <td>{{ i.gender ? i.gender.gender : '' }}</td>
+                  <td>{{ i.genotype ? i.genotype.genotype : '' }}</td>
+                  <td>{{ i.marital_status ? i.marital_status.marital_status : '' }}</td>
                   <td class="with-btn" nowrap>
                     <button
-                      v-if="canUpdate"
+                      v-if="(canUpdateIndividualContributor && itemTitle === 'Individual Contributor') || (canUpdateAgencyUser && itemTitle === 'Agency User')"
                       @click.stop.prevent="view(i)"
                       class="btn btn-sm btn-secondary m-r-2"
                     >View/Edit</button>
                     <button
-                      v-if="canDelete"
-                      @click.stop.prevent="deleteUser(i)"
+                      v-if="(itemTitle === 'Individual Contributor' && canDeleteIndividualContributor) || (itemTitle === 'Agency User' && canDeleteAgencyUser)"
+                      @click.stop.prevent="deleteUser(i,itemTitle)"
                       class="btn btn-sm btn-secondary m-r-2"
                     >Delete</button>
                   </td>
@@ -70,7 +69,7 @@
         <div class="modal-dialog modal-lg" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">{{ selectedTitle }} - {{ hcp_name }}</h5>
+              <h5 class="modal-title">{{ selectedTitle }}</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
@@ -179,12 +178,22 @@
               </form>
             </div>
             <div class="modal-footer">
+
               <button
+                v-if="itemTitle === 'Individual Contributor' && canCreateIndividualContributor"
                 :disabled="!formOk"
-                @click.stop.prevent="save()"
+                @click.stop.prevent="saveIndividualContributor()"
                 type="button"
-                class="btn btn-secondary"
-              >Save</button>
+                class="btn btn-sm btn-secondary"
+              >Save Individual Contributor</button>
+              <button
+                v-else-if="itemTitle === 'Agency User' && canCreateAgencyUser"
+                :disabled="!formOk"
+                @click.stop.prevent="saveAgencyUser()"
+                type="button"
+                class="btn btn-sm btn-secondary"
+              >Save Agency User</button>
+
             </div>
           </div>
         </div>
@@ -216,17 +225,13 @@
   };
 
   export default {
-    name: 'HcpUsers',
+    name: 'ContributionUsers',
     components: {
       Page,
       PageTitle
     },
     mixins: [AlertMixin, PermissionMixin],
     props: {
-      hcp: {
-        type: Object,
-        required: true
-      },
       users: {
         type: Array,
         required: true
@@ -243,6 +248,14 @@
         type: Array,
         required: true
       },
+      pageTitle: {
+        type: String,
+        required: true
+      },
+      itemTitle: {
+        type: String,
+        required: true
+      },
       bloodGroups: {
         type: Array,
         required: true
@@ -250,10 +263,12 @@
     },
     data() {
       return {
-        canCreate: false,
-        canDelete: false,
-        canViewHcps: false,
-        canUpdate: false,
+        canCreateAgencyUser: false,
+        canUpdateAgencyUser: false,
+        canDeleteAgencyUser: false,
+        canCreateIndividualContributor: false,
+        canUpdateIndividualContributor: false,
+        canDeleteIndividualContributor: false,
         localUsers: this.users,
         selectedTitle: '',
         gender: {},
@@ -262,8 +277,6 @@
         genotype: {},
         user: {},
         currentId: 0,
-        hcp_name: this.hcp.name,
-        hcp_id: this.hcp.id,
         errors: ''
       };
     },
@@ -317,35 +330,75 @@
       }
     },
     mounted() {
-      this.canViewHcps = this.hasPermission('hcps:read');
-      this.canCreate = this.hasPermission('hcp-users:create');
-      this.canUpdate = this.hasPermission('hcp-users:update');
-      this.canDelete = this.hasPermission('hcp-users:delete');
+      this.canDeleteIndividualContributor = this.hasPermission('individual-contributors:delete');
+      this.canCreateIndividualContributor = this.hasPermission('individual-contributors:create');
+      this.canDeleteAgencyUser = this.hasPermission('agency-users:delete');
+      this.canCreateAgencyUser = this.hasPermission('agency-users:create');
+      this.canUpdateIndividualContributor = this.hasPermission('individual-contributors:update');
+      this.canUpdateAgencyUser = this.hasPermission('agency-users:update');
     },
     methods: {
-      save() {
+      saveIndividualContributor() {
         const copy = { ...this.user };
         copy.first_name = copy.first_name.toUpperCase();
         copy.middle_name = copy.middle_name.toUpperCase();
         copy.last_name = copy.last_name.toUpperCase();
-        copy.hcp_id = this.hcp_id;
 
         if (copy.id) {
           axios
-            .put(`/hcp-users`, copy)
-            .then(({ data: { success, data, message = 'Could not update' } }) => {
+            .put(`/individual-contributors/${this.currentId}`, copy)
+            .then(({ data: { success, data, message = 'Could not update individual contributor' } }) => {
               this.showToast(message, success);
-              if (success) { console.log(data)
+              if (success) {
                 $(this.$refs.modal).modal('hide');
-                this.localUsers = this.localUsers.map(i => data.id === i.user_id ? Object.assign(i, { user: data }) : i);
+                this.localUsers = this.localUsers.map((user) => {
+                  if (data.id === user.id) return data;
+                  return user;
+                });
               }
             }).catch(({ response: { data: { data, message } } }) => {
             data.length <= 0 ? this.errors = message : this.errors = Object.values(data).flat().join('<br>');
           });
         } else {
           axios
-            .post(`/hcp-users`, copy)
-            .then(({ data: { success, data, message = 'Could not create' } }) => {
+            .post(`/individual-contributors`, copy)
+            .then(({ data: { success, data, message = 'Could not create individual contributor' } }) => {
+              this.showToast(message, success);
+              if (success) {
+                $(this.$refs.modal).modal('hide');
+                this.localUsers.push(data);
+                this.user = { ...defaultUser };
+              }
+            }).catch(({ response: { data: { data, message } } }) => {
+            data.length <= 0 ? this.errors = message : this.errors = Object.values(data).flat().join('<br>');
+          });
+        }
+      },
+      saveAgencyUser() {
+        const copy = { ...this.user };
+        copy.first_name = copy.first_name.toUpperCase();
+        copy.middle_name = copy.middle_name.toUpperCase();
+        copy.last_name = copy.last_name.toUpperCase();
+
+        if (copy.id) {
+          axios
+            .put(`/agency-users/${this.currentId}`, copy)
+            .then(({ data: { success, data, message = 'Could not update agency user' } }) => {
+              this.showToast(message, success);
+              if (success) {
+                $(this.$refs.modal).modal('hide');
+                this.localUsers = this.localUsers.map((user) => {
+                  if (data.id === user.id) return data;
+                  return user;
+                });
+              }
+            }).catch(({ response: { data: { data, message } } }) => {
+            data.length <= 0 ? this.errors = message : this.errors = Object.values(data).flat().join('<br>');
+          });
+        } else {
+          axios
+            .post(`/agency-users`, copy)
+            .then(({ data: { success, data, message = 'Could not create agency user' } }) => {
               this.showToast(message, success);
               if (success) {
                 $(this.$refs.modal).modal('hide');
@@ -359,7 +412,7 @@
       },
       view(user) {
         if (user) {
-          this.user = { ...user.user };
+          this.user = { ...user };
           this.currentId = user.id;
           this.selectedTitle = `Update user ${this.user.first_name} ${this.user.last_name}`;
           this.gender = this.genders.find(({ id }) => id === this.user.gender_id) || {};
@@ -368,7 +421,7 @@
           this.maritalStatus = this.maritalStatuses.find(({ id }) => id === this.user.marital_status_id) || {};
         } else {
           this.currentId = 0;
-          this.selectedTitle = 'Create user';
+          this.selectedTitle = 'Create contributor/user';
           this.user = { ...defaultUser };
           this.gender = {};
           this.genotype = {};
@@ -382,18 +435,26 @@
         }
         $(this.$refs.modal).modal('show');
       },
-      deleteUser(user) {
-        axios
-          .delete(`/hcp-users/${user.id}`)
-          .then(({ data: { success, data } }) => {
-            if (success) {
-              this.showToast('Hcp user deleted');
-              this.localUsers = this.localUsers.filter(u => u.id !== user.id);
-            }
-          }).catch(({ response: { data } }) => console.log("error", data));
-      },
-      viewHcps() {
-        return `/hcps`;
+      deleteUser(user,tit) {
+        if(tit === 'Individual Contributor'){
+          axios
+            .delete(`/individual-contributors/${user.id}`)
+            .then(({ data: { success, data } }) => {
+              if (success) {
+                this.showToast('Individual Contributor deleted');
+                this.localUsers = this.localUsers.filter(u => u.id !== user.id);
+              }
+            }).catch(({ response: { data } }) => console.log("error", data));
+        }else if(tit === 'Agency User'){
+          axios
+            .delete(`/agency-users/${user.id}`)
+            .then(({ data: { success, data } }) => {
+              if (success) {
+                this.showToast('Agency User deleted');
+                this.localUsers = this.localUsers.filter(u => u.id !== user.id);
+              }
+            }).catch(({ response: { data } }) => console.log("error", data));
+        }
       }
     }
   }

@@ -38,6 +38,7 @@ class CreateHcpsTable extends Migration
       $table->foreign('state_id')->references('id')->on('states')->onDelete('cascade')->onUpdate('cascade');
       $table->foreign('lga_id')->references('id')->on('lgas')->onDelete('cascade')->onUpdate('cascade');
       $table->foreign('town_id')->references('id')->on('towns')->onDelete('cascade')->onUpdate('cascade');
+      $table->foreign('cbn_code')->references('cbn_code')->on('banks')->onDelete('cascade')->onUpdate('cascade');
     });
   }
 

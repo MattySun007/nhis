@@ -1,19 +1,19 @@
 <template>
   <Page>
-    <page-title title="HCPs"/>
+    <page-title title="Institutions"/>
     <div class="row">
       <div class="col-sm-12">
         <div class="panel panel-inverse">
           <div class="panel-heading">
-            <h4 class="panel-title">{{ hcp_name }} - HCP users</h4>
+            <h4 class="panel-title">{{ institution_name }} - Institution users</h4>
           </div>
           <div class="panel-body">
             <button
               v-if="canCreate"
               class="btn btn-sm btn-secondary"
               @click.stop.prevent="view(null)"
-            >Add HCP user</button>
-            <a v-if="canViewHcps" :href="viewHcps()" class="btn btn-sm btn-secondary">Back to HCPs</a>
+            >Add Institution user</button>
+            <a v-if="canViewInstitutions" :href="viewInstitutions()" class="btn btn-sm btn-secondary">Back to Institutions</a>
             <div class="table-responsive">
               <table class="table table-striped m-b-0">
                 <thead>
@@ -54,7 +54,7 @@
                     >View/Edit</button>
                     <button
                       v-if="canDelete"
-                      @click.stop.prevent="deleteUser(i)"
+                      @click.stop.prevent="deleteUser(i.user)"
                       class="btn btn-sm btn-secondary m-r-2"
                     >Delete</button>
                   </td>
@@ -70,7 +70,7 @@
         <div class="modal-dialog modal-lg" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">{{ selectedTitle }} - {{ hcp_name }}</h5>
+              <h5 class="modal-title">{{ selectedTitle }} - {{ institution_name }}</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
@@ -216,14 +216,14 @@
   };
 
   export default {
-    name: 'HcpUsers',
+    name: 'InstitutionUsers',
     components: {
       Page,
       PageTitle
     },
     mixins: [AlertMixin, PermissionMixin],
     props: {
-      hcp: {
+      institution: {
         type: Object,
         required: true
       },
@@ -251,9 +251,9 @@
     data() {
       return {
         canCreate: false,
-        canDelete: false,
-        canViewHcps: false,
         canUpdate: false,
+        canDelete: false,
+        canViewInstitutions: false,
         localUsers: this.users,
         selectedTitle: '',
         gender: {},
@@ -262,8 +262,8 @@
         genotype: {},
         user: {},
         currentId: 0,
-        hcp_name: this.hcp.name,
-        hcp_id: this.hcp.id,
+        institution_name: this.institution.name,
+        institution_id: this.institution.id,
         errors: ''
       };
     },
@@ -317,10 +317,10 @@
       }
     },
     mounted() {
-      this.canViewHcps = this.hasPermission('hcps:read');
-      this.canCreate = this.hasPermission('hcp-users:create');
-      this.canUpdate = this.hasPermission('hcp-users:update');
-      this.canDelete = this.hasPermission('hcp-users:delete');
+      this.canCreate = this.hasPermission('institution-users:create');
+      this.canUpdate = this.hasPermission('institution-users:update');
+      this.canViewInstitutions = this.hasPermission('institutions:read');
+      this.canDelete = this.hasPermission('institution-users:delete');
     },
     methods: {
       save() {
@@ -328,29 +328,33 @@
         copy.first_name = copy.first_name.toUpperCase();
         copy.middle_name = copy.middle_name.toUpperCase();
         copy.last_name = copy.last_name.toUpperCase();
-        copy.hcp_id = this.hcp_id;
+        copy.institution_id = this.institution_id;
 
         if (copy.id) {
           axios
-            .put(`/hcp-users`, copy)
+            .put(`/institution-users`, copy)
             .then(({ data: { success, data, message = 'Could not update' } }) => {
               this.showToast(message, success);
-              if (success) { console.log(data)
+              if (success) {
                 $(this.$refs.modal).modal('hide');
                 this.localUsers = this.localUsers.map(i => data.id === i.user_id ? Object.assign(i, { user: data }) : i);
+              }else{
+                this.errors = message;
               }
             }).catch(({ response: { data: { data, message } } }) => {
-            data.length <= 0 ? this.errors = message : this.errors = Object.values(data).flat().join('<br>');
+              data.length <= 0 ? this.errors = message : this.errors = Object.values(data).flat().join('<br>');
           });
         } else {
           axios
-            .post(`/hcp-users`, copy)
+            .post(`/institution-users`, copy)
             .then(({ data: { success, data, message = 'Could not create' } }) => {
               this.showToast(message, success);
               if (success) {
                 $(this.$refs.modal).modal('hide');
                 this.localUsers.push(data);
                 this.user = { ...defaultUser };
+              }else{
+                this.errors = message;
               }
             }).catch(({ response: { data: { data, message } } }) => {
             data.length <= 0 ? this.errors = message : this.errors = Object.values(data).flat().join('<br>');
@@ -384,16 +388,18 @@
       },
       deleteUser(user) {
         axios
-          .delete(`/hcp-users/${user.id}`)
+          .delete(`/institution-users/${user.id}`)
           .then(({ data: { success, data } }) => {
             if (success) {
-              this.showToast('Hcp user deleted');
-              this.localUsers = this.localUsers.filter(u => u.id !== user.id);
+              this.showToast('Institution user deleted');
+              this.localUsers = this.localUsers.filter(u => u.user_id !== user.id);
             }
-          }).catch(({ response: { data } }) => console.log("error", data));
+          }).catch(({ response: { data: { data, message } } }) => {
+          data.length <= 0 ? this.errors = message : this.errors = Object.values(data).flat().join('<br>');
+        });
       },
-      viewHcps() {
-        return `/hcps`;
+      viewInstitutions() {
+        return `/institutions`;
       }
     }
   }

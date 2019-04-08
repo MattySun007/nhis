@@ -23,13 +23,16 @@
                     <th>Email</th>
                     <th>RCC number</th>
                     <th>Country</th>
-                    <th>Address</th>
+                    <th>State</th>
+                    <th>Lga</th>
+                    <th>Town</th>
+                    <!--<th>Address</th>-->
                     <th v-if="canUpdate">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-if="!localInstitutions.length">
-                    <td colspan="9" class="text-center">No institutions</td>
+                    <td colspan="10" class="text-center">No institutions</td>
                   </tr>
                   <tr v-for="i in localInstitutions" :key="i.id">
                     <td>{{ i.code }}</td>
@@ -37,8 +40,11 @@
                     <td>{{ i.phone }}</td>
                     <td>{{ i.email }}</td>
                     <td>{{ i.rcc_number }}</td>
-                    <td>{{ i.country_id }}</td>
-                    <td>{{ i.address }}</td>
+                    <td>{{ i.country.country }}</td>
+                    <td>{{ i.state.name }}</td>
+                    <td>{{ i.lga.name }}</td>
+                    <td>{{ i.town.name }}</td>
+                    <!--<td>{{ i.address }}</td>-->
                     <td v-if="canUpdate" class="with-btn" nowrap>
                       <button
                         @click.stop.prevent="view(i)"
@@ -54,6 +60,7 @@
                         @click.stop.prevent="activate(i)"
                         class="btn btn-sm btn-secondary"
                       >Activate</button>
+                      <a :href="institutionUsersLink(i)" class="btn btn-sm btn-white">Users</a>
                     </td>
                   </tr>
                 </tbody>
@@ -73,6 +80,7 @@
               </button>
             </div>
             <div class="modal-body">
+              <div v-if="errors.length" class="alert alert-warning" v-html="errors" />
               <form>
                 <div class="form-group row">
                   <label class="control-label col-md-4 col-sm-4">Name *</label>
@@ -226,7 +234,8 @@ export default {
       country: { country: '' },
       state: { name: '' },
       lga: { name: '' },
-      town: { name: '' }
+      town: { name: '' },
+      errors: ''
     };
   },
   computed: {
@@ -334,19 +343,24 @@ export default {
             this.localInstitutions = this.localInstitutions.map((institution) => {
               if (data.id === institution.id) return data;
               return institution;
-            });
+            })
           }
+        }).catch(({ response: { data: { data } } }) => {
+          this.errors = Object.values(data).flat().join('<br>');
         });
       } else {
         axios
         .post('/institutions', copy)
         .then(({ data: { success, data, message = 'Could not create' } }) => {
+          console.log(data);
           this.showToast(message, success);
           if (success) {
             $(this.$refs.instModal).modal('hide');
             this.localInstitutions.push(data);
             this.institution = { ...defaultInstitution };
           }
+        }).catch(({ response: { data: { data } } }) => {
+          this.errors = Object.values(data).flat().join('<br>');
         });
       }
     },
@@ -362,6 +376,11 @@ export default {
         this.state = {};
         this.lga = {};
         this.institution = { ...defaultInstitution };
+        axios
+          .get(`/codes/institution`)
+          .then(({ data: { data: { code } } }) => {
+            this.institution.code = code;
+          });
       }
       $(this.$refs.instModal).modal('show');
     },
@@ -390,6 +409,9 @@ export default {
           });
         }
       });
+    },
+    institutionUsersLink({ id }) {
+      return `/institutions/${id}/users`;
     }
   }
 }

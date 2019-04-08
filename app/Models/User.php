@@ -8,6 +8,10 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Validator;
 use Illuminate\Validation\Rule;
 use App\Traits\HasPermission;
+use App\Utilities\Utility;
+use Illuminate\Support\Facades\Hash;
+use App\Models\InstitutionUser;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
 {
@@ -19,7 +23,7 @@ class User extends Authenticatable
    * @var array
    */
   protected $fillable = [
-    'name', 'email', 'password',
+    'verification_no', 'password', 'temp_password', 'contribution_amount', 'blood_group_id', 'gender_id', 'marital_status_id', 'genotype_id', 'colour', 'height', 'date_of_birth','first_name','middle_name', 'last_name','email', 'phone'
   ];
 
   /**
@@ -40,6 +44,36 @@ class User extends Authenticatable
     'email_verified_at' => 'datetime',
   ];
 
+  /**
+   * This is a mutator, mutating every attribute key password
+   * @param $pass
+   */
+  public function setPasswordAttribute($pass){
+
+    $this->attributes['password'] = Hash::make($pass);
+
+  }
+
+  public function blood_group()
+  {
+    return $this->belongsTo(BloodGroup::class);
+  }
+
+  public function gender()
+  {
+    return $this->belongsTo(Gender::class);
+  }
+
+  public function genotype()
+  {
+    return $this->belongsTo(Genotype::class);
+  }
+
+  public function marital_status()
+  {
+    return $this->belongsTo(MaritalStatus::class);
+  }
+
   public function agencyUser()
   {
     return $this->hasOne(AgencyUser::class);
@@ -47,7 +81,12 @@ class User extends Authenticatable
 
   public function institutionUser()
   {
-    return $this->hasOne(InstitutionUser::class);
+    return $this->hasMany(InstitutionUser::class);
+  }
+
+  public function individualUser()
+  {
+    return $this->hasMany(Individual::class);
   }
 
   public function adoptee()
@@ -55,11 +94,21 @@ class User extends Authenticatable
     return $this->hasOne(Adoptee::class);
   }
 
+  /**
+   * Hcp staff, a staff/user belongs to one Hcp
+   */
   public function hcpUser()
   {
-    return $this->hasOne(HcpUser::class);
+    return $this->hasMany(HcpUser::class);
   }
 
+  /**
+   * contributor Hcps, a contributor can have more than one Hcp
+   */
+  public function hcpIndividual()
+  {
+    return $this->hasMany(HcpIndividual::class);
+  }
 
   public function isAgencyUser()
   {
@@ -79,6 +128,11 @@ class User extends Authenticatable
   public function isInstitutionUser()
   {
     return (bool) $this->institutionUser()->count();
+  }
+
+  public function isIndividualUser()
+  {
+    return (bool) $this->individualUser()->count();
   }
 
   public function getFullNameAttribute()
@@ -108,7 +162,36 @@ class User extends Authenticatable
       return "Adoptee";
     }
 
-    return "Individual Contributor";
+    if ($this->isIndividualUser())
+    {
+      return "Individual Contributor";
+    }
+
+    return "Unknown";
+  }
+
+  public function getUserInstitutionsAttribute()
+  {
+    return InstitutionUser::where('user_id', auth()->user()->id)->pluck('institution_id');
+  }
+
+  public function getUserHcpsAttribute()
+  {
+    return HcpUser::where('user_id', auth()->user()->id)->pluck('hcp_id');
+  }
+
+  public function getContributorHcpsAttribute()
+  {
+    if(auth()->user()->user_type == 'Individual Contributor'){
+      return HcpIndividual::where('user_id', auth()->user()->id)->pluck('hcp_id');
+    }
+    if(auth()->user()->user_type == 'Institution User'){
+      return DB::table('hcp_institution')
+        ->join('institution_user', 'institution_user.institution_id', '=', 'hcp_institution.institution_id')
+        ->select('hcp_institution.hcp_id')
+        ->get();
+    }
+    return false;
   }
 
   public function adoptees()
@@ -134,7 +217,22 @@ class User extends Authenticatable
       'institution-users:manage-permissions',
       'institution-users:create',
       'institution-users:update',
-      'institution-users:read'
+      'institution-users:read',
+      'institution-users:delete',
+      'individual-contributors:read',
+      'individual-contributors:update',
+      'individual-contributors:create',
+      'individual-contributors:delete',
+      'institution-hcp:read',
+      'institution-hcp:create',
+      'institution-hcp:delete',
+      'claims:read',
+      'claims:manage',
+      'contributions:manage',
+      'agency-users:create',
+      'agency-users:read',
+      'agency-users:update',
+      'agency-users:delete'
     );
   }
 
@@ -147,7 +245,39 @@ class User extends Authenticatable
       'hcp-users:update',
       'hcp-users:create',
       'hcp-users:delete',
-      'hcp-users:manage-permissions'
+      'hcp-users:manage-permissions',
+      'treatments:read',
+      'treatments:update',
+      'treatments:create',
+      'treatments:delete',
+      'claims:read'
+    );
+  }
+
+  public function assignInstitutionUserPermissions()
+  {
+    $this->givePermissions(
+      'institutions:update',
+      'institutions:read',
+      'institution-users:read',
+      'institution-users:update',
+      'institution-users:create',
+      'institution-users:delete',
+      'institution-users:manage-permissions'
+    );
+    $this->assignIndividualContributorPermissions();
+  }
+
+  public function assignIndividualContributorPermissions()
+  {
+    $this->givePermissions(
+      'contributions:update',
+      'contributions:read',
+      'contributions:create',
+      'contributions:delete',
+      'adoptions:create',
+      'adoptions:read',
+      'adoptions:create'
     );
   }
 
@@ -234,20 +364,57 @@ class User extends Authenticatable
 
   public static function createHcpUser(Hcp $hcp, array $data)
   {
-    User::unguard();
+    $p = Utility::generatePassword($data);
+    if($p){
+      $data['password'] = $p['password'];
+      $data['temp_password'] = $p['temp_password'];
+    }
+
     $user = User::create($data);
-    User::reguard();
     $user->assignHcpUserPermissions();
     return HcpUser::create(['user_id' => $user->id, 'hcp_id' => $hcp->id]);
   }
 
+  public static function createInstitutionUser(Institution $institution, array $data)
+  {
+    $p = Utility::generatePassword($data);
+    if($p){
+      $data['password'] = $p['password'];
+      $data['temp_password'] = $p['temp_password'];
+    }
+
+    $user = User::create($data);
+    $user->assignInstitutionUserPermissions();
+    return InstitutionUser::create(['user_id' => $user->id, 'institution_id' => $institution->id]);
+  }
+
+  public static function createIndividualContributor(array $data)
+  {
+    $p = Utility::generatePassword($data);
+    if($p){
+      $data['password'] = $p['password'];
+      $data['temp_password'] = $p['temp_password'];
+    }
+
+    $user = User::create($data);
+    $user->assignIndividualContributorPermissions();
+    Individual::create(['user_id' => $user->id]);
+    return User::where('id', $user->id)->with(['blood_group', 'genotype', 'marital_status', 'gender'])->first();
+    // $institutionUser->loadMissing(['user', 'user.genotype', 'user.gender', 'user.blood_group', 'user.marital_status']);
+  }
+
   public static function createAgencyUser(array $data)
   {
-    User::unguard();
+    $p = Utility::generatePassword($data);
+    if($p){
+      $data['password'] = $p['password'];
+      $data['temp_password'] = $p['temp_password'];
+    }
+
     $user = User::create($data);
-    User::reguard();
     $user->assignAgencyUserPermissions();
-    return AgencyUser::create(['user_id' => $user->id]);
+    AgencyUser::create(['user_id' => $user->id]);
+    return User::where('id', $user->id)->with(['blood_group', 'genotype', 'marital_status', 'gender'])->first();
   }
 
 }
