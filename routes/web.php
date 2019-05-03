@@ -71,6 +71,14 @@ Route::group(['middleware' => ['query_log']], function () {
     /**
      * users
      */
+    Route::post(
+      'users/search',
+      [
+        'uses' => '\App\Http\Controllers\UserController@searchUsers',
+        'as' => 'UserController@searchUsers',
+        'middleware' => 'permission:adoption:read,agency-users:read,users:read,individual-contributors:read,institution-users:read,hcp-users:read'
+      ]
+    );
     Route::get(
       'agency-users',
       [
@@ -373,6 +381,75 @@ Route::group(['middleware' => ['query_log']], function () {
         'uses' => '\App\Http\Controllers\ClaimController@hcpTreatmentsClaimsPaid',
         'as' => 'ClaimController@hcpTreatmentsClaimsPaid',
         'middleware' => 'permission:claims:read,claims:manage'
+      ]
+    );
+
+    Route::get(
+      'institution/{id}/treatments/claims/unpaid',
+      [
+        'uses' => '\App\Http\Controllers\ClaimController@institutionTreatmentsClaimsUnpaid',
+        'as' => 'ClaimController@institutionTreatmentsClaimsUnpaid',
+        'middleware' => 'permission:claims:read,claims:manage'
+      ]
+    );
+    Route::get(
+      'institution/{id}/treatments/claims/paid',
+      [
+        'uses' => '\App\Http\Controllers\ClaimController@institutionTreatmentsClaimsPaid',
+        'as' => 'ClaimController@institutionTreatmentsClaimsPaid',
+        'middleware' => 'permission:claims:read,claims:manage'
+      ]
+    );
+
+    Route::get(
+      'my/treatments/claims',
+      [
+        'uses' => '\App\Http\Controllers\ClaimController@myTreatmentsClaims',
+        'as' => 'ClaimController@myTreatmentsClaims',
+      ]
+    );
+    Route::get(
+      'my/treatments/claims/service',
+      [
+        'uses' => '\App\Http\Controllers\ClaimController@myTreatmentsClaimsService',
+        'as' => 'ClaimController@myTreatmentsClaimsService',
+      ]
+    );
+
+    /**
+     * adoption
+     */
+    Route::get(
+      'adoption/{id?}',
+      [
+        'uses' => '\App\Http\Controllers\AdoptionController@index',
+        'as' => 'AdoptionController@index',
+        'middleware' => 'permission:adoption:read'
+      ]
+    );
+    Route::post(
+      'adoption',
+      [
+        'uses' => '\App\Http\Controllers\AdoptionController@create',
+        'as' => 'AdoptionController@create',
+        'middleware' => 'permission:adoption:create'
+      ]
+    );
+
+    Route::put(
+      'adoption',
+      [
+        'uses' => '\App\Http\Controllers\AdoptionController@update',
+        'as' => 'AdoptionController@update',
+        'middleware' => 'permission:adoption:update'
+      ]
+    );
+    Route::delete(
+      'adoption/{id}',
+      [
+        'uses' => '\App\Http\Controllers\AdoptionController@deleteAdoption',
+        'as' => 'AdoptionController@deleteAdoption',
+        'middleware' => 'permission:adoption:delete'
       ]
     );
 

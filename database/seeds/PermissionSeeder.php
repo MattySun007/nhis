@@ -53,5 +53,9 @@ class PermissionSeeder extends Seeder
     Permission::create(['name' => 'agency-users:update']);
     Permission::create(['name' => 'agency-users:read']);
     Permission::create(['name' => 'agency-users:delete']);
+    Permission::create(['name' => 'adoption:create']);
+    Permission::create(['name' => 'adoption:update']);
+    Permission::create(['name' => 'adoption:delete']);
+    Permission::create(['name' => 'adoption:read']);
   }
 }

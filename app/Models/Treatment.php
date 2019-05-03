@@ -3,6 +3,7 @@
 namespace App\Models;
 use Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -54,16 +55,38 @@ class Treatment extends Model
 
   public static function getTreatments($data)
   {
-    if(is_array($data['hcp_id']) && count($data['hcp_id']) >= 1){
+    /*if(is_array($data['hcp_id']) && count($data['hcp_id']) >= 1){
       if(isset($data['paid']) && is_numeric($data['paid'])){
         return Treatment::where('paid', $data['paid'])->whereIn('hcp_id', $data['hcp_id'])->with(['user', 'hcp'])->get()->all();
       }
       return Treatment::whereIn('hcp_id', $data['hcp_id'])->with(['user', 'hcp'])->get()->all();
     }
-    if(isset($data['paid']) && is_numeric($data['paid'])){
-      return Treatment::where('paid', $data['paid'])->where('hcp_id', $data['hcp_id'])->with(['user', 'hcp'])->get()->all();
+    if(is_array($data['institution_id']) && count($data['institution_id']) >= 1){
+      if(isset($data['paid']) && is_numeric($data['paid'])){
+        return Treatment::where('paid', $data['paid'])->whereIn('hcp_id', $data['hcp_id'])->with(['user', 'hcp'])->get()->all();
+      }
+      return Treatment::whereIn('hcp_id', $data['hcp_id'])->with(['user', 'hcp'])->get()->all();
+    }*/
+    if(isset($data['hcp_id']) && is_numeric($data['hcp_id'])){
+      if(isset($data['paid']) && is_numeric($data['paid'])){
+        return Treatment::where('paid', $data['paid'])->where('hcp_id', $data['hcp_id'])->with(['user', 'hcp'])->get()->all();
+      }
+      return Treatment::where('hcp_id', $data['hcp_id'])->with(['user', 'hcp'])->get()->all();
     }
-    return Treatment::where('hcp_id', $data['hcp_id'])->with(['user', 'hcp'])->get()->all();
+
+    if(isset($data['institution_id']) && is_numeric($data['institution_id'])){
+      if(isset($data['paid']) && is_numeric($data['paid'])){
+        return Treatment::where('paid', $data['paid'])->whereIn('hcp_id', HcpInstitution::where('institution_id', $data['institution_id'])->pluck('hcp_id'))->with(['user', 'hcp'])->get()->all();
+      }
+      return Treatment::whereIn('hcp_id', HcpInstitution::where('institution_id', $data['institution_id'])->pluck('hcp_id'))->with(['user', 'hcp'])->get()->all();
+    }
+
+    if(isset($data['user_id']) && is_numeric($data['user_id'])){
+      return Treatment::where('user_id',  $data['user_id'])->with(['user', 'hcp'])->get()->all();
+    }
+
+    return Treatment::where('user_id',  auth()->user()->id)->with(['user', 'hcp'])->get()->all();
+
   }
 
 }

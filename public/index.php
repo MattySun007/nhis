@@ -6,6 +6,7 @@
  * @package  Laravel
  * @author   Taylor Otwell <taylor@laravel.com>
  */
+ //echo file_exists(__DIR__.'/../vendor/autoload.php') ? 1 : 0;exit;
 
 define('LARAVEL_START', microtime(true));
 

@@ -3,14 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+//use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Validator;
 use Illuminate\Validation\Rule;
 use App\Traits\HasPermission;
 use App\Utilities\Utility;
 use Illuminate\Support\Facades\Hash;
-use App\Models\InstitutionUser;
+//use App\Models\InstitutionUser;
 use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
@@ -250,7 +250,11 @@ class User extends Authenticatable
       'treatments:update',
       'treatments:create',
       'treatments:delete',
-      'claims:read'
+      'claims:read',
+      'adoption:create',
+      'adoption:read',
+      'adoption:update',
+      'adoption:delete'
     );
   }
 
@@ -263,7 +267,12 @@ class User extends Authenticatable
       'institution-users:update',
       'institution-users:create',
       'institution-users:delete',
-      'institution-users:manage-permissions'
+      'institution-users:manage-permissions',
+      'claims:read',
+      'adoption:create',
+      'adoption:read',
+      'adoption:update',
+      'adoption:delete'
     );
     $this->assignIndividualContributorPermissions();
   }
@@ -277,7 +286,12 @@ class User extends Authenticatable
       'contributions:delete',
       'adoptions:create',
       'adoptions:read',
-      'adoptions:create'
+      'adoptions:create',
+      'claims:read',
+      'adoption:create',
+      'adoption:read',
+      'adoption:update',
+      'adoption:delete'
     );
   }
 

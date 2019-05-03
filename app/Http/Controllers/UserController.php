@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Database\Eloquent\Collection;
 use Log;
 use Illuminate\Support\Facades\DB;
 use App\Utilities\Utility;
@@ -268,7 +269,7 @@ class UserController extends Controller
     $success = $this->deleteUser($id);
     return response()->json([
       'success' => $success,
-      'message' => $success ? 'User deleted' : 'Could not delete User'
+      'message' => $success ? 'Agency User deleted' : 'Could not delete Agency User'
     ]);
   }
 
@@ -286,7 +287,7 @@ class UserController extends Controller
     $success = $this->deleteUser($id);
     return response()->json([
       'success' => $success,
-      'message' => $success ? 'User deleted' : 'Could not delete User'
+      'message' => $success ? 'Hcp User deleted' : 'Could not delete Hcp User'
     ]);
   }
 
@@ -295,7 +296,7 @@ class UserController extends Controller
     $success = $this->deleteUser($id);
     return response()->json([
       'success' => $success,
-      'message' => $success ? 'User deleted' : 'Could not delete User'
+      'message' => $success ? 'Institution User deleted' : 'Could not delete Institution User'
     ]);
   }
 
@@ -324,6 +325,50 @@ class UserController extends Controller
       'message' => 'User verification_no generated',
       'data' => array('verification_no' => $this->generateUserCode())
     ]);
+  }
+
+  public function searchUsers()
+  {
+    $data = $this->request->all();
+    $users = array();
+    $str = $data['str'];
+    if(isset($data['institution_id']) && is_numeric($data['institution_id'])){
+
+    }elseif(isset($data['hcp_id']) && is_numeric($data['hcp_id'])){
+
+    }elseif(isset($data['is_adoptees']) && $data['is_adoptees'] == 1){
+      $users = User::where('verification_no', $str)
+        ->orWhere('last_name', 'LIKE', '%'.$str.'%')
+        ->orWhere('first_name', 'LIKE', '%'.$str.'%')
+        ->orWhere('middle_name', 'LIKE', '%'.$str.'%')
+        ->orWhere('email', 'LIKE', '%'.$str.'%')
+        ->orWhere('phone', 'LIKE', '%'.$str.'%')
+        ->with(['blood_group', 'genotype', 'marital_status', 'gender'])->get();
+      $users = $users->whereNotIn('id', DB::table('adoptees')->pluck('adoptee_id'))->all();
+    }else{
+      $users = User::where('verification_no', $str)
+        ->orWhere('last_name', 'LIKE', '%'.$str.'%')
+        ->orWhere('first_name', 'LIKE', '%'.$str.'%')
+        ->orWhere('middle_name', 'LIKE', '%'.$str.'%')
+        ->orWhere('email', 'LIKE', '%'.$str.'%')
+        ->orWhere('phone', 'LIKE', '%'.$str.'%')
+        ->with(['blood_group', 'genotype', 'marital_status', 'gender'])->get()->all();
+    }
+
+
+    if(count($users) >= 1){
+      return response()->json([
+        'success' => true,
+        'message' => 'Records returned',
+        'data' => $users
+      ], 200);
+    }else{
+      return response()->json([
+        'success' => false,
+        'message' => 'No record found!',
+        'data' => array()
+      ], 200);
+    }
   }
 
 
