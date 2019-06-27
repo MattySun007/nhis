@@ -70,7 +70,7 @@
                       @click.stop.prevent="treatments(i)"
                       class="btn btn-sm btn-secondary"
                     >Treatments</button>
-                    <a :href="hcpUsersLink(i)" class="btn btn-sm btn-secondary">Users</a>
+                    <a v-if="canReadHcpUsers" :href="hcpUsersLink(i)" class="btn btn-sm btn-secondary">Users</a>
                   </td>
                 </tr>
                 </tbody>
@@ -107,6 +107,7 @@
                   <th>Diagnosis</th>
                   <th>Medication</th>
                   <th>Date</th>
+                  <th>Status</th>
                   <th>Actions</th>
                 </tr>
                 </thead>
@@ -123,9 +124,10 @@
                   <td>{{ i.medical_condition }}</td>
                   <td>{{ i.medication_administered }}</td>
                   <td>{{ i.created_at }}</td>
+                  <td>{{ i.paid === 1 ? 'Paid' : 'Not-Paid' }}</td>
                   <td class="with-btn" nowrap>
                     <button
-                      v-if="canUpdateTreatment"
+                      v-if="canUpdateTreatment && !i.paid"
                       @click.stop.prevent="viewTreatment(i)"
                       class="btn btn-xs btn-secondary m-r-2"
                     >View/Edit</button>
@@ -417,6 +419,7 @@
         canAddTreatment: false,
         canReadTreatment: false,
         canUpdateTreatment: false,
+        canReadHcpUsers: false,
         canDeleteTreatment: false,
         localHcps: this.hcps,
         localTreatments: {},
@@ -426,7 +429,7 @@
         selectedTitle: '',
         selectedHcp: null,
         selectedUser: {
-          id: 25
+          id: 2
         },
         hcp_type: { hcp_type: '' },
         bank: { bank: '' },
@@ -557,6 +560,7 @@
       this.canReadTreatment = this.hasPermission('treatments:read');
       this.canUpdateTreatment = this.hasPermission('treatments:update');
       this.canDeleteTreatment = this.hasPermission('treatments:delete');
+      this.canReadHcpUsers = this.hasPermission('hcp-users:read');
     },
     methods: {
       fetchTowns() {

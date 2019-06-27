@@ -22,7 +22,13 @@ class DatabaseSeeder extends Seeder
     $this->call(LgaSeeder::class);
     $this->call(TownSeeder::class);
     $this->call(PermissionSeeder::class);
-    $this->call(UserSeeder::class);
     $this->call(HcpTypeSeeder::class);
+
+    $this->call(AgencyPermissionSeeder::class);
+    $this->call(HcpPermissionSeeder::class);
+    $this->call(InstitutionPermissionSeeder::class);
+    $this->call(HcpSeeder::class);
+    $this->call(InstitutionSeeder::class);
+    $this->call(UserSeeder::class);
   }
 }

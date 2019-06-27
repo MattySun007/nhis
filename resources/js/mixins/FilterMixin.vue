@@ -21,6 +21,10 @@ export default {
       const opts = { minimumFractionDigits: 2 };
       return new Intl.NumberFormat('en-US', opts).format(amount);
     },
+    toThousandNoDecimal(amount) {
+      const opts = { minimumFractionDigits: 0 };
+      return new Intl.NumberFormat('en-US', opts).format(amount);
+    },
     formatPrice(value, dec, cur ) {
       dec = dec || 0
       if (value === null) {

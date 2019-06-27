@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Database\Eloquent\Collection;
 use Log;
 use Illuminate\Support\Facades\DB;
 use App\Utilities\Utility;
@@ -332,7 +331,36 @@ class UserController extends Controller
     $data = $this->request->all();
     $users = array();
     $str = $data['str'];
-    if(isset($data['institution_id']) && is_numeric($data['institution_id'])){
+    if(isset($data['by_user_type']) && $data['by_user_type'] == 1){
+      if(auth()->user()->user_type == 'Agency User'){
+        $users = User::where('verification_no', $str)
+          ->orWhere('last_name', 'LIKE', '%'.$str.'%')
+          ->orWhere('first_name', 'LIKE', '%'.$str.'%')
+          ->orWhere('middle_name', 'LIKE', '%'.$str.'%')
+          ->orWhere('email', 'LIKE', '%'.$str.'%')
+          ->orWhere('phone', 'LIKE', '%'.$str.'%')
+          ->with(['blood_group', 'genotype', 'marital_status', 'gender'])->get();
+        $users = $users->whereIn('id', DB::table('agency_users')->pluck('user_id'))->all();
+      }elseif(auth()->user()->user_type == 'Hcp User'){
+        $users = User::where('verification_no', $str)
+          ->orWhere('last_name', 'LIKE', '%'.$str.'%')
+          ->orWhere('first_name', 'LIKE', '%'.$str.'%')
+          ->orWhere('middle_name', 'LIKE', '%'.$str.'%')
+          ->orWhere('email', 'LIKE', '%'.$str.'%')
+          ->orWhere('phone', 'LIKE', '%'.$str.'%')
+          ->with(['blood_group', 'genotype', 'marital_status', 'gender'])->get();
+        $users = $users->whereIn('hcp_user.hcp_id', auth()->user()->user_hcps)->all();
+      }elseif(auth()->user()->user_type == 'Institution User'){
+        $users = User::where('verification_no', $str)
+          ->orWhere('last_name', 'LIKE', '%'.$str.'%')
+          ->orWhere('first_name', 'LIKE', '%'.$str.'%')
+          ->orWhere('middle_name', 'LIKE', '%'.$str.'%')
+          ->orWhere('email', 'LIKE', '%'.$str.'%')
+          ->orWhere('phone', 'LIKE', '%'.$str.'%')
+          ->with(['blood_group', 'genotype', 'marital_status', 'gender'])->get();
+        $users = $users->whereIn('institution_user.institution_id', auth()->user()->user_institutions)->all();
+      }
+    }elseif(isset($data['institution_id']) && is_numeric($data['institution_id'])){
 
     }elseif(isset($data['hcp_id']) && is_numeric($data['hcp_id'])){
 
@@ -355,7 +383,6 @@ class UserController extends Controller
         ->with(['blood_group', 'genotype', 'marital_status', 'gender'])->get()->all();
     }
 
-
     if(count($users) >= 1){
       return response()->json([
         'success' => true,
@@ -369,6 +396,15 @@ class UserController extends Controller
         'data' => array()
       ], 200);
     }
+  }
+
+  public function getPassword()
+  {
+    return response()->json([
+      'success' => true,
+      'message' => 'Password successfully generated',
+      'data' => Utility::makePassword('Password')
+    ]);
   }
 
 

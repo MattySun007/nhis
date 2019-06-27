@@ -57,5 +57,6 @@ class PermissionSeeder extends Seeder
     Permission::create(['name' => 'adoption:update']);
     Permission::create(['name' => 'adoption:delete']);
     Permission::create(['name' => 'adoption:read']);
+    Permission::create(['name' => 'permissions:manage']);
   }
 }

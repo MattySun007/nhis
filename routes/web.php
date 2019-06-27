@@ -13,14 +13,15 @@
 
 Route::group(['middleware' => ['query_log']], function () {
 
+  Route::get('/user-perms/{id?}', ['uses' => '\App\Http\Controllers\PermissionController@userPermsGet', 'as' => 'user-perms']);
   Route::group(['middleware' => ['guest']], function () {
-    Route::get('institutions', ['uses' => '\App\Http\Controllers\InstitutionController@index', 'as' => 'InstitutionController@index']);
-    Route::post('institutions', ['uses' => '\App\Http\Controllers\InstitutionController@create', 'as' => 'InstitutionController@create']);
-    Route::put('institutions/{id}', ['uses' => '\App\Http\Controllers\InstitutionController@update', 'as' => 'InstitutionController@update']);
+    Route::post('/vueLogin', ['uses' => '\App\Http\Controllers\Auth\LoginController@vueLogin', 'as' => 'vueLogin']);
+    Route::get('/getPassword', ['uses' => '\App\Http\Controllers\UserController@getPassword', 'as' => 'getPassword']);
   });
 
 
   Route::group(['middleware' => ['auth']], function () {
+
     Route::get('getTP/{user_id}', ['uses' => '\App\Http\Controllers\UserController@getTP', 'as' => 'UserController@getTP']);
     Route::get('options/towns/{stateId}', ['uses' => '\App\Http\Controllers\OptionController@towns', 'as' => 'OptionController@towns']);
     Route::get('options/hcps/{key_name}/{key_id}', ['uses' => '\App\Http\Controllers\OptionController@hcps', 'as' => 'OptionController@hcps']);
@@ -29,7 +30,15 @@ Route::group(['middleware' => ['query_log']], function () {
     Route::get('codes/hcp/{code}/treatments', ['uses' => '\App\Http\Controllers\TreatmentController@getTreatmentCode', 'as' => 'TreatmentController@getTreatmentCode']);
     Route::get('codes/user', ['uses' => '\App\Http\Controllers\UserController@getUserCode', 'as' => 'UserController@getUserCode']);
     Route::match(['get', 'post'], 'logout', ['uses' => '\App\Http\Controllers\Auth\LoginController@logout', 'as' => 'logout']);
-    Route::get('/', ['uses' => '\App\Http\Controllers\HomeController@index', 'as' => 'dashboard']);
+    Route::get('/', ['uses' => '\App\Http\Controllers\DashboardController@index', 'as' => 'dashboard']);
+
+    /**
+     * permissions
+     */
+    Route::get('/permissions', ['uses' => '\App\Http\Controllers\PermissionController@index', 'as' => 'permissions', 'middleware' => 'permission:permissions:manage']);
+    Route::post('user-permissions-list', ['uses' => '\App\Http\Controllers\PermissionController@listUserPerms', 'as' => 'user-permissions-list', 'middleware' => 'permission:permissions:manage']);
+    Route::post('user-permissions-add', ['uses' => '\App\Http\Controllers\PermissionController@addUserPerms', 'as' => 'user-permissions-add', 'middleware' => 'permission:permissions:manage']);
+    Route::post('user-permissions-delete', ['uses' => '\App\Http\Controllers\PermissionController@deleteUserPerms', 'as' => 'user-permissions-delete', 'middleware' => 'permission:permissions:manage']);
 
     /**
      * institution-hcp
@@ -287,6 +296,7 @@ Route::group(['middleware' => ['query_log']], function () {
     /**
      * treatments
      */
+
     Route::get(
       'hcp/{id}/treatments',
       [

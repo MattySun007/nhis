@@ -17,7 +17,7 @@ class CreateHcpsTable extends Migration
       $table->bigIncrements('id');
       $table->string('code', 10)->unique();
       $table->string('name', 45);
-      $table->string('address', 125);
+      $table->string('address', 125)->nullable();
       $table->string('phone', 15);
       $table->string('email', 125);
       $table->string('account_number', 20)->nullable();
@@ -33,6 +33,7 @@ class CreateHcpsTable extends Migration
       $table->timestamps();
 
       $table->unique(['phone', 'email'], 'DUPLICATE_HCP');
+      $table->unique(['account_number','cbn_code'], 'duplicate_bank');
       $table->foreign('hcp_type_id')->references('id')->on('hcp_types')->onDelete('cascade')->onUpdate('cascade');
       $table->foreign('country_id')->references('id')->on('countries')->onDelete('cascade')->onUpdate('cascade');
       $table->foreign('state_id')->references('id')->on('states')->onDelete('cascade')->onUpdate('cascade');

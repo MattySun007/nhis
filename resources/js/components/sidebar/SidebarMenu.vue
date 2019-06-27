@@ -1,5 +1,6 @@
 <script>
   const sidebarMenu = [
+    { path: '/dashboard', icon: 'fa fa-home', title: 'Dashboard'},
     { path: '#', icon: 'fa fa-th', title: 'Institutions', permissions: ['institutions:read'],
       children: [
         { path: '/institutions', title: 'List', permissions: ['institutions:read'] }
@@ -28,6 +29,11 @@
     { path: '#', icon: 'fa fa-ambulance', title: 'Treatment', permissions: ['treatments:read'],
       children: [
         { path: '/treatments', title: 'List', permissions: ['treatments:read'] }
+      ]
+    },
+    { path: '#', icon: 'fa fa-lock', title: 'Access Rights', permissions: ['permissions:manage'],
+      children: [
+        { path: '/permissions', title: 'List', permissions: ['permissions:manage'] }
       ]
     },
     { path: '#', icon: 'fa fa-tasks', title: 'Adoption', permissions: ['adoption:read'],

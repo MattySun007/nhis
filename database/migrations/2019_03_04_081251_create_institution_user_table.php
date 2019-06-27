@@ -19,6 +19,7 @@ class CreateInstitutionUserTable extends Migration
             $table->bigInteger('user_id')->unsigned()->index();
             $table->timestamps();
 
+          $table->unique(['institution_id','user_id'], 'duplicate_record');
             $table->foreign('institution_id')->references('id')->on('institutions')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
         });

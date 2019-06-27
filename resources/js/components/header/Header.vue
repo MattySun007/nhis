@@ -24,8 +24,12 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a href="/" class="navbar-brand">
+        <!--<a href="/" class="navbar-brand">
           <span class="navbar-logo"></span>
+          NHIS
+        </a>-->
+        <a href="/" class="navbar-brand">
+          <img src="images/logo.png" alt="logo"/>
           NHIS
         </a>
         <button

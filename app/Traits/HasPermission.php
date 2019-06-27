@@ -14,7 +14,6 @@ trait HasPermission
   {
     $permission = ! is_string($permission) ?
       (is_object($permission) ? $permission->name : $permission['name']) : $permission;
-
     return (bool) $this->permissions()->where('name', $permission)->count();
   }
 
@@ -26,12 +25,10 @@ trait HasPermission
   public function givePermissions(... $permissions)
   {
     $permissions = $this->getAllPermissions($permissions);
-
     if($permissions !== null)
     {
       $this->permissions()->saveMany($permissions);
     }
-
     return $this;
   }
 

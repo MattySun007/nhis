@@ -3,14 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Notifications\Notifiable;
-//use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Validator;
 use Illuminate\Validation\Rule;
 use App\Traits\HasPermission;
 use App\Utilities\Utility;
 use Illuminate\Support\Facades\Hash;
-//use App\Models\InstitutionUser;
 use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable
@@ -201,7 +199,7 @@ class User extends Authenticatable
 
   public function assignAgencyUserPermissions()
   {
-    $this->givePermissions(
+    /*$this->givePermissions(
       'institutions:read',
       'institutions:create',
       'institutions:update',
@@ -233,12 +231,27 @@ class User extends Authenticatable
       'agency-users:read',
       'agency-users:update',
       'agency-users:delete'
+    );*/
+    // assign default permissions for everybody, others should be assignable by a user who has permissions:manage permission
+    $this->givePermissions(
+      'contributions:update',
+      'contributions:read',
+      'contributions:create',
+      'contributions:delete',
+      'adoptions:create',
+      'adoptions:read',
+      'adoptions:create',
+      'claims:read',
+      'adoption:create',
+      'adoption:read',
+      'adoption:update',
+      'adoption:delete'
     );
   }
 
   public function assignHcpUserPermissions()
   {
-    $this->givePermissions(
+    /*$this->givePermissions(
       'hcps:update',
       'hcps:read',
       'hcp-users:read',
@@ -255,12 +268,27 @@ class User extends Authenticatable
       'adoption:read',
       'adoption:update',
       'adoption:delete'
+    );*/
+    // assign default permissions for everybody, others should be assignable by a user who has permissions:manage permission
+    $this->givePermissions(
+      'contributions:update',
+      'contributions:read',
+      'contributions:create',
+      'contributions:delete',
+      'adoptions:create',
+      'adoptions:read',
+      'adoptions:create',
+      'claims:read',
+      'adoption:create',
+      'adoption:read',
+      'adoption:update',
+      'adoption:delete'
     );
   }
 
   public function assignInstitutionUserPermissions()
   {
-    $this->givePermissions(
+    /*$this->givePermissions(
       'institutions:update',
       'institutions:read',
       'institution-users:read',
@@ -268,6 +296,21 @@ class User extends Authenticatable
       'institution-users:create',
       'institution-users:delete',
       'institution-users:manage-permissions',
+      'claims:read',
+      'adoption:create',
+      'adoption:read',
+      'adoption:update',
+      'adoption:delete'
+    );*/
+    // assign default permissions for everybody, others should be assignable by a user who has permissions:manage permission
+    $this->givePermissions(
+      'contributions:update',
+      'contributions:read',
+      'contributions:create',
+      'contributions:delete',
+      'adoptions:create',
+      'adoptions:read',
+      'adoptions:create',
       'claims:read',
       'adoption:create',
       'adoption:read',
@@ -430,5 +473,6 @@ class User extends Authenticatable
     AgencyUser::create(['user_id' => $user->id]);
     return User::where('id', $user->id)->with(['blood_group', 'genotype', 'marital_status', 'gender'])->first();
   }
+
 
 }

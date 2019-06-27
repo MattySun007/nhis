@@ -2,6 +2,7 @@
 
 namespace App\Utilities;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 use Log;
 
 class Utility 
@@ -26,9 +27,14 @@ class Utility
       $defaultPassword = Str::random(10);
       $userStr = "(email: {$data['email']}, phone: {$data['phone']})";
       Log::warning("Assigned '$defaultPassword' as default password to $userStr");
-      return array('password' => $defaultPassword, 'temp_password' => Utility::paul($defaultPassword), 'plain_password' => $defaultPassword);
+      return Utility::makePassword($defaultPassword);
     }
     return false;
+  }
+
+  public static function makePassword($password = 'Password')
+  {
+    return array('password' => $password, 'temp_password' => Utility::paul($password), 'plain_password' => $password, 'laravel_encrypted' => Hash::make($password));
   }
 
   public static function paul($data)

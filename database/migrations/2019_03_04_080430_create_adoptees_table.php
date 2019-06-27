@@ -19,6 +19,7 @@ class CreateAdopteesTable extends Migration
             $table->bigInteger('adoptee_id')->unsigned()->index();
             $table->timestamps();
 
+          $table->unique(['adoptee_id','user_id'], 'duplicate_record');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
             $table->foreign('adoptee_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
         });

@@ -32,8 +32,8 @@ class AppServiceProvider extends ServiceProvider
           $name = auth()->user()->full_name;
           $user_type = auth()->user()->user_type;
           $user_institutions = auth()->user()->user_institutions;
-          $contributor_hcps = auth()->user()->contributor_hcps;
-          $user_hcps = auth()->user()->user_hcps;
+          $contributor_hcps = auth()->user()->contributor_hcps; // for individual contributors only
+          $user_hcps = auth()->user()->user_hcps; // for non-individual contributors or users
           $permissions = auth()->user()->permissions()->get();
         } else
         {
