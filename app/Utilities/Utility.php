@@ -1,8 +1,11 @@
 <?php
 
 namespace App\Utilities;
+
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\File;
+use Intervention\Image\ImageManagerStatic as Image;
 use Log;
 
 class Utility 
@@ -12,9 +15,64 @@ class Utility
     return md5(md5(sha1(sha1(md5($pass)))));
   }
 
+  public static function getConvertImage($params) {
+    return Image::make($params['file_path'])->resize($params['width'], $params['height'])->encode($params['format'], $params['quality'])->save($params['save_path']) ? true : false;
+  }
+
+  public static function getStoredImage($name, $env_path){
+    $obj_url = asset(env($env_path).$name);
+    $obj_path = public_path((env($env_path).$name));
+    $img = File::exists($obj_path.'.jpg') ? $obj_url.'.jpg' : (File::exists($obj_path.'.png') ? $obj_url.'.png' : asset(env($env_path).'null.png'));
+    return $img;
+  }
+
+  public static function make_get_request($url, $headers = [])
+  {
+    return Utility::make_request(['url' => $url, 'headers' => $headers, 'method' => 'GET']);
+  }
+
+  public static function make_post_request($params, $url, $headers)
+  {
+    return Utility::make_request(['body' => $params, 'url' => $url, 'headers' => $headers, 'method' => 'POST']);
+  }
+
+  public static function make_request(array $params)
+  {
+    $args = [
+      CURLOPT_URL => $params['url'],
+      CURLOPT_RETURNTRANSFER => true
+    ];
+    if ($params['method'] != 'GET') $args[CURLOPT_CUSTOMREQUEST] = $params['method'];
+    if (! empty($params['body'])) $args[CURLOPT_POSTFIELDS] = json_encode($params['body']);
+    if (count($params['headers'])) $args[CURLOPT_HTTPHEADER] = $params['headers'];
+    try
+    {
+      $ch = curl_init();
+      curl_setopt_array($ch, $args);
+      $response = curl_exec($ch);
+      $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      Log::info("{$params['method']} {$params['url']} returned HTTP code: $httpcode");
+      curl_close($ch);
+      return $response;
+    } catch(Exception $e) {
+      Log::info("{$params['method']} {$params['url']} request error: {$e->getTraceAsString()}");
+      return 'ERROR';
+    }
+  }
+
+  public static function parseValidatorErrors($errors) {
+    $d = "<ul class=\"alert alert-warning\">";
+    foreach ($errors as $err){
+      $d .= "<li>".$err[0]."</li>";
+    }
+    $d .= "</ul>";
+    return $d;
+  }
+
   public static function hashedStringMatch($plain, $hash) {
     return $hash === static::hashString($plain);
   }
+
 
   public static function getTP($p) {
     return Utility::pauline($p);

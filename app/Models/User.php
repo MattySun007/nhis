@@ -72,6 +72,11 @@ class User extends Authenticatable
     return $this->belongsTo(MaritalStatus::class);
   }
 
+  public function userBiometric()
+  {
+    return $this->hasOne(UserBiometric::class);
+  }
+
   public function agencyUser()
   {
     return $this->hasOne(AgencyUser::class);

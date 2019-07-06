@@ -208,7 +208,7 @@
                 errors.push(response.data.error);
               }else{
                 successMsg.push('Welcome '+ response.data.user.last_name + ' '+ response.data.user.first_name+ ', ...redirecting to your dashboard');
-                setTimeout(function(){window.location.href="/";},6000);
+                setTimeout(function(){window.location.href=response.data.url;},6000);
               }
             }
           }, function() {

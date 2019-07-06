@@ -335,7 +335,7 @@
             .put(`/hcp-users`, copy)
             .then(({ data: { success, data, message = 'Could not update' } }) => {
               this.showToast(message, success);
-              if (success) { console.log(data)
+              if (success) {
                 $(this.$refs.modal).modal('hide');
                 this.localUsers = this.localUsers.map(i => data.id === i.user_id ? Object.assign(i, { user: data }) : i);
               }
@@ -350,7 +350,10 @@
               if (success) {
                 $(this.$refs.modal).modal('hide');
                 this.localUsers.push(data);
+                /*this.currentUserId = data.user.user_id;
+                this.currentUserBiometricStatus = 0;*/
                 this.user = { ...defaultUser };
+                window.location.href = '/biometric/start';
               }
             }).catch(({ response: { data: { data, message } } }) => {
             data.length <= 0 ? this.errors = message : this.errors = Object.values(data).flat().join('<br>');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\UserBiometric;
 use Log;
 use Illuminate\Support\Facades\DB;
 use App\Utilities\Utility;
@@ -99,6 +100,7 @@ class UserController extends Controller
     if(!isset($params['type']) || empty($params['type'])){
       return false;
     }
+    $user = '';
     if($params['type'] == 'agency-user'){
       $user = User::createAgencyUser($data);
     }
@@ -113,8 +115,15 @@ class UserController extends Controller
       $user = User::createInstitutionUser($params['institution'], $data);
       $user->loadMissing(['user', 'user.genotype', 'user.gender', 'user.blood_group', 'user.marital_status']);
     }
+    if($user){
+      $this->request->session()->put('currentUserId', $user->user_id);
+      $this->request->session()->put('currentUserVerificationNo', $user->verification_no);
+      $this->request->session()->put('currentUserBiometricStatus', 0);
+      return $user;
+    }
+    return false;
     //Log::info('User creation error:: '.$user);
-    return $user;
+
   }
 
   public function updateUser($id)

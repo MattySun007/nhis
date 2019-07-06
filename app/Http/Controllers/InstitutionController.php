@@ -110,8 +110,7 @@ class InstitutionController extends Controller
     ]);
   }
 
-  public function listHcp($id = "")
-  {
+  public function listHcp($id = ""){
     if(!empty($id)){
       $inst = Institution::find($id);
       $hcp = $inst->hcps()->with(['hcp', 'hcp.town', 'hcp.state', 'hcp.country', 'hcp.lga', 'hcp.hcp_type', 'hcp.bank'])->get()->all();

@@ -13,11 +13,16 @@
 
 Route::group(['middleware' => ['query_log']], function () {
 
+  Route::get('test', ['uses' => '\App\Http\Controllers\BiometricController@test', 'as' => 'test']);
+
   Route::get('/user-perms/{id?}', ['uses' => '\App\Http\Controllers\PermissionController@userPermsGet', 'as' => 'user-perms']);
   Route::group(['middleware' => ['guest']], function () {
     Route::post('/vueLogin', ['uses' => '\App\Http\Controllers\Auth\LoginController@vueLogin', 'as' => 'vueLogin']);
     Route::get('/getPassword', ['uses' => '\App\Http\Controllers\UserController@getPassword', 'as' => 'getPassword']);
   });
+
+  Route::get('biometric/return-url', ['uses' => '\App\Http\Controllers\BiometricController@success', 'as' => 'BiometricController@success']);
+  Route::get('biometric/error-url', ['uses' => '\App\Http\Controllers\BiometricController@error', 'as' => 'BiometricController@error']);
 
 
   Route::group(['middleware' => ['auth']], function () {
@@ -31,6 +36,21 @@ Route::group(['middleware' => ['query_log']], function () {
     Route::get('codes/user', ['uses' => '\App\Http\Controllers\UserController@getUserCode', 'as' => 'UserController@getUserCode']);
     Route::match(['get', 'post'], 'logout', ['uses' => '\App\Http\Controllers\Auth\LoginController@logout', 'as' => 'logout']);
     Route::get('/', ['uses' => '\App\Http\Controllers\DashboardController@index', 'as' => 'dashboard']);
+
+    /**
+     * biometrics
+     */
+    Route::match(['get', 'post'], 'biometric/user/{id?}', ['uses' => '\App\Http\Controllers\BiometricController@userBiometricData', 'as' => 'biometric/user']);
+    Route::get(
+      'biometric/start',
+      [
+        'uses' => '\App\Http\Controllers\BiometricController@index',
+        'as' => 'BiometricController@index',
+        'middleware' => 'permission:agency-users:create,users:create,individual-contributors:create,institution-users:create,hcp-users:read'
+      ]
+    );
+
+
 
     /**
      * permissions

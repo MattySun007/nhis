@@ -29,7 +29,7 @@
           NHIS
         </a>-->
         <a href="/" class="navbar-brand">
-          <img src="images/logo.png" alt="logo"/>
+          <img src="/images/logo.png"  alt="logo"/>
           NHIS
         </a>
         <button
