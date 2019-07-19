@@ -316,7 +316,7 @@
       },
       selectUser(i) {
         this.user_text = 'User: [ '+ i.last_name + ' ' + i.first_name + ' ] selected';
-        this.selectedUserId = i.id;
+        this.selectedUserId = i.user_id;
         axios
           .post(`/user-permissions-list`, {user_id: this.selectedUserId})
           .then(({ data: { user_permissions } }) => {
@@ -373,7 +373,8 @@
             }else{
               this.errors = message;
             }
-          }).catch(({ response: { data: { data } } }) => {
+          }).catch(({ response: { data } }) => {
+            console.log(data);
           this.errors = Object.values(data).flat().join('<br>');
         });
       }

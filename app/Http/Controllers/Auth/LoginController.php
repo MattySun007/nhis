@@ -30,7 +30,7 @@ class LoginController extends Controller
    *
    * @var string
    */
-  protected $redirectTo = '/dashboard';
+  protected $redirectTo = '/';
 
   /**
    * Create a new controller instance.
@@ -40,7 +40,6 @@ class LoginController extends Controller
   public function __construct()
   {
     $this->middleware('guest')->except('logout');
-    Session::put('backUrl', URL::previous());
   }
   public function showLoginForm()
   {
@@ -55,7 +54,7 @@ class LoginController extends Controller
         'status'   => 'success',
         'user' => Auth::user(),
         'error' => false,
-        'url' => Session::get('backUrl') ? Session::get('backUrl') :   $this->redirectTo
+        'url' => auth()->user()->last_url ? auth()->user()->last_url :   $this->redirectTo
       ]);
     } else {
       return response()->json([

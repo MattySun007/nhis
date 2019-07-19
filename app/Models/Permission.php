@@ -12,7 +12,8 @@ class Permission extends Model
 
   public static function listPermissions()
   {
-    $title = $user = $perms = '';
+    $perms = [];
+    $title = $user = '';
     if(auth()->user()->user_type == 'Agency User'){
       $perms = AgencyPermission::all();
       $title = 'Agency User Permission';
@@ -25,7 +26,6 @@ class Permission extends Model
       $title = 'Institution User Permission';
       $perms = InstitutionPermission::all();
     }
-
     return ['itemTitle' => $title, 'perms' => $perms];
   }
 
@@ -47,7 +47,7 @@ class Permission extends Model
   }
 
   public static function listUserPerms($data){
-    $user = User::find($data['user_id']);
+    $user = User::find($data['user_id']);//dd($data);
     if (empty($user)) {
       return [
         'success' => false,

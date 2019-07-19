@@ -41,11 +41,16 @@
         { path: '/adoption', title: 'List', permissions: ['adoption:read'] }
       ]
     },
-    { path: '#', icon: 'fa fa-coins', title: 'Claims',
+    { path: '#', icon: 'fa fa-tree', title: 'Claims',
       children: [
         { path: '/claims/unpaid', title: 'List Unpaid', permissions: ['claims:read','claims:manage'] },
         { path: '/claims/paid', title: 'List Paid', permissions: ['claims:read','claims:manage'] },
         { path: '/my/treatments/claims', title: 'My Claims' }
+      ]
+    },
+    { path: '#', icon: 'fa fa-coins', title: 'Contributions',
+      children: [
+        { path: '/contributions', title: 'List', permissions: ['contributions:read','contributions:manage','contributions:approve','contributions:process','contributions:delete'] },
       ]
     }
   ]

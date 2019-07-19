@@ -21,7 +21,7 @@ class User extends Authenticatable
    * @var array
    */
   protected $fillable = [
-    'verification_no', 'password', 'temp_password', 'contribution_amount', 'blood_group_id', 'gender_id', 'marital_status_id', 'genotype_id', 'colour', 'height', 'date_of_birth','first_name','middle_name', 'last_name','email', 'phone'
+    'verification_no', 'password', 'temp_password', 'contribution_amount', 'blood_group_id', 'gender_id', 'marital_status_id', 'genotype_id', 'colour', 'height', 'date_of_birth','first_name','middle_name', 'last_name','email', 'phone', 'last_url'
   ];
 
   /**
@@ -74,27 +74,27 @@ class User extends Authenticatable
 
   public function userBiometric()
   {
-    return $this->hasOne(UserBiometric::class);
+    return $this->hasOne(UserBiometric::class, 'user_id', 'id');
   }
 
   public function agencyUser()
   {
-    return $this->hasOne(AgencyUser::class);
+    return $this->hasOne(AgencyUser::class, 'user_id', 'id');
   }
 
   public function institutionUser()
   {
-    return $this->hasMany(InstitutionUser::class);
+    return $this->hasMany(InstitutionUser::class, 'user_id', 'id');
   }
 
   public function individualUser()
   {
-    return $this->hasMany(Individual::class);
+    return $this->hasMany(Individual::class, 'user_id', 'id');
   }
 
   public function adoptee()
   {
-    return $this->hasOne(Adoptee::class);
+    return $this->hasOne(Adoptee::class, 'adoptee_id', 'id');
   }
 
   /**
@@ -102,7 +102,7 @@ class User extends Authenticatable
    */
   public function hcpUser()
   {
-    return $this->hasMany(HcpUser::class);
+    return $this->hasMany(HcpUser::class, 'user_id', 'id');
   }
 
   /**
@@ -121,6 +121,11 @@ class User extends Authenticatable
   public function isAdoptee()
   {
     return (bool) $this->adoptee()->count();
+  }
+
+  public static function isAdoptor()
+  {
+    return (bool) Adoptee::where('user_id', auth()->user()->id)->first();
   }
 
   public function isHcpUser()
@@ -239,10 +244,7 @@ class User extends Authenticatable
     );*/
     // assign default permissions for everybody, others should be assignable by a user who has permissions:manage permission
     $this->givePermissions(
-      'contributions:update',
       'contributions:read',
-      'contributions:create',
-      'contributions:delete',
       'adoptions:create',
       'adoptions:read',
       'adoptions:create',
@@ -276,10 +278,7 @@ class User extends Authenticatable
     );*/
     // assign default permissions for everybody, others should be assignable by a user who has permissions:manage permission
     $this->givePermissions(
-      'contributions:update',
       'contributions:read',
-      'contributions:create',
-      'contributions:delete',
       'adoptions:create',
       'adoptions:read',
       'adoptions:create',
@@ -309,10 +308,7 @@ class User extends Authenticatable
     );*/
     // assign default permissions for everybody, others should be assignable by a user who has permissions:manage permission
     $this->givePermissions(
-      'contributions:update',
       'contributions:read',
-      'contributions:create',
-      'contributions:delete',
       'adoptions:create',
       'adoptions:read',
       'adoptions:create',
@@ -328,10 +324,8 @@ class User extends Authenticatable
   public function assignIndividualContributorPermissions()
   {
     $this->givePermissions(
-      'contributions:update',
       'contributions:read',
-      'contributions:create',
-      'contributions:delete',
+      'contributions:process',
       'adoptions:create',
       'adoptions:read',
       'adoptions:create',

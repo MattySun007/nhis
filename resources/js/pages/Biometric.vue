@@ -111,7 +111,7 @@
                     <tr>
                       <td>&nbsp;</td>
                       <td>
-                        <button @click.stop.prevent="confirm()" class="btn btn-sm btn-secondary m-r-2">Confirm</button>
+                        <a :href="backToStart()" class="btn btn-sm btn-secondary">Okay & Proceed</a>
                       </td>
                     </tr>
                   </table>
@@ -243,6 +243,9 @@
         return this.url;
       },
       exitBioLink() {
+        return this.url;
+      },
+      backToStart() {
         return this.url;
       }
     }

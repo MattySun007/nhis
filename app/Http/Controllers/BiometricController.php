@@ -2,12 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contribution;
+use App\Models\Institution;
 use Log;
 use App\Utilities\Utility;
 use App\Models\User;
 use App\Models\UserBiometric;
 use Illuminate\Support\Facades\File;
 use Intervention\Image\ImageManagerStatic as Image;
+
+use App\Exports\ExportFileCollection;
+use App\Exports\ExportFileArray;
+use App\Exports\ExportFileQuery;
+use App\Exports\ExportFileView;
+use App\Exports\ExportFileMultipleSheet;
+use App\Imports\ImportFile;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BiometricController extends Controller
 {
@@ -19,7 +29,6 @@ class BiometricController extends Controller
 
   public function index()
   {
-    $this->request->session()->put('backUrl', url()->previous());
     $this->api_key = env('BIOMETRIC_KEY');
     $this->url = env('BIOMETRIC_URL');
     $this->return_url = url(env('BIOMETRIC_RETURN_URL'));
@@ -49,7 +58,7 @@ class BiometricController extends Controller
       return [
         'success' => false,
         'message' => 'Validation failed',
-        'url' => "biometric/start",
+        'url' => url("biometric/start"),
         'data' => $v_err
       ];
     }
@@ -84,8 +93,8 @@ class BiometricController extends Controller
     if($getImage){
       return [
         'success' => true,
-        'message' => !$is_exists ? $success : "This biometric exists for user:: ".$user->last_name. ' '.$user->first_name. '( ' . $user->verification_no . ' ), biometric updated',
-        'url' => $this->request->session()->get('backUrl'),
+        'message' => !$is_exists ? $success : "This biometric exists for user:: ".$user->last_name. ' '.$user->first_name. '( ' . $user->verification_no . ' )',
+        'url' => $this->request->session()->has('backUrl') ? $this->request->session()->get('backUrl') : 'dashboard',
         'data' => array(
           'user' => $user,
           'img_url' => Utility::getStoredImage($user->verification_no,'BIOMETRIC_IMAGE_DIR'),
@@ -104,7 +113,7 @@ class BiometricController extends Controller
       return [
         'success' => false,
         'message' => 'Could not get image',
-        'url' => "biometric/start",
+        'url' => url("biometric/start"),
         'data' => $error
       ];
     }
@@ -116,14 +125,14 @@ class BiometricController extends Controller
     $userStr = "(current user: $current_user_id, vno: $current_vno)";
 
     // arbitrary
-    $this->api_key = 'RhuNkU266WTPyymNS2GApbSWO';
+    /*$this->api_key = 'RhuNkU266WTPyymNS2GApbSWO';
     $current_vno = 'USER-11112223';
     $current_user_id = 2;
-    $this->request->session()->put('backUrl', 'hcps');
+    $this->request->session()->put('backUrl', 'hcps');*/
 
     $data = [
       'class_id' => $_GET['ImageID'],
-      'token_id' => $this->api_key,
+      'token_id' => !empty($this->api_key) ? $this->api_key : env('BIOMETRIC_KEY'),
       'data_url' => $_GET['DataURL'],
       'user_id' => $_GET['UserID'],
       'verification_no' => $current_vno,
@@ -136,16 +145,17 @@ class BiometricController extends Controller
     if ($_GET['status'] == 200) { // New enrolment
       return view('biometrics.list', $this->save_bio($data));
     } else { // Duplicate
-      if (((int) $_GET['UserID']) == $current_user_id) { // ...for this account
-        // log duplicate, route user to see image and choose to confirm or reject
+      if (UserBiometric::where('class_id', $_GET['ImageID'])->first()) { // ...for this account
+        // log duplicate, route user to see image
         $error = "Capture is a duplicate for $userStr";
         Log::info('Biometric duplicate detected:: '.$error);
         $user = User::find($_GET['UserID']);
         $user->load('userBiometric');
+        User::destroy($current_user_id);
         return view('biometrics.list', [
           'success' => true,
           'message' => $error,
-          'url' => "",
+          'url' => $this->request->session()->has('backUrl') ? $this->request->session()->get('backUrl') : 'dashboard',
           'data' => array(
             'user' => $user,
             'img_url' => Utility::getStoredImage($user->verification_no,'BIOMETRIC_IMAGE_DIR'),
@@ -159,7 +169,8 @@ class BiometricController extends Controller
         ]);
       } else { // Enroll the previous account and delete this one
         $user = User::where('id', $_GET['UserID'])->first();
-        $dupStr = "(previous user: {$_GET['UserID']}, vno: $user->verification_no)";
+        $vno = $user ? $user->verification_no : '';
+        $dupStr = "(previous user: {$_GET['UserID']}, vno: $vno)";
         // delete this current reg and log
         User::destroy($current_user_id);
         Log::info('Biometric duplicate deleted:: '."$userStr is a duplicate of $dupStr");
@@ -177,7 +188,62 @@ class BiometricController extends Controller
 
   public function test()
   {
-    Log::info('this is recorded');
+
+    //Log::info('this is recorded');
+
+    /*$users = User::where('id',1)->select('id','email','phone','verification_no')->get();
+    Excel::store(new ExportFileCollection(['collection' => $users, 'headings' => ['id','email','phone','verification_no']]), 'public/exports/test_collection.xlsx');*/
+
+    //Excel::store(new ExportFileArray(['headings' => ['a','b','c'],'array' => [[1, 2, 3], [1, 2, 3]]]), 'public/exports/test_array.xlsx');
+
+    /*$query = User::query()->whereEmail('agency@nhis.com')->select('id','email','phone','verification_no');
+    Excel::store(new ExportFileQuery(['query' => $query, 'headings' => ['id','email','phone','verification_no']]), 'public/exports/test_query.xlsx');*/
+
+    /*$users = User::select('id','email','phone','verification_no')->get();
+    Excel::store(new ExportFileView(['view' => 'exports.exports', 'data' => $users]), 'public/exports/test_view.xlsx');*/
+
+    /*$users = User::where('id',1)->select('id','email','phone','verification_no')->get();
+    $institutions = Institution::where('id',1)->select('id','email','phone','name')->get();
+    $cont = Contribution::where('id',1)->select('id','amount','created_at','approved')->get();
+    $user1 = User::where('id',3)->select('id','email','phone','verification_no')->get();
+    Excel::store(new ExportFileMultipleSheet(['data' =>
+      [
+        ['collection' => $users, 'headings' => ['id','email','phone','verification_no']],
+        ['collection' => $institutions, 'headings' => ['id','email','phone','name']],
+        ['collection' => $user1, 'headings' => ['id','email','phone','verification_no']],
+        ['collection' => $cont, 'headings' => ['id','amount','created_at','approved']]
+      ],
+      'dataStructure' => 'collection'
+    ]), 'public/exports/test_multiple.xlsx');*/ // storage_path
+
+    Excel::import(new ImportFile(['model' => User::class, 'columns' => ['id','verification_no','first_name','middle_name','last_name','email','phone','password']]), storage_path('app/public/imports/users.xlsx')); // any path
+
+    //$array = Excel::toArray(new ImportFile(['model' => User::class, 'columns' => ['id','verification_no','first_name','middle_name','last_name','email','phone','password']]), storage_path('app/public/imports/users.xlsx'));dd($array);
+
+    /*dd(1);
+    $params = array(
+      'subject' => 'Contribution Payment Notification',
+      'message_body' => 'Attached is a copy of the contribution payment schedule for this institution',
+      'message_header' => 'Contribution Payment File',
+      'title' => 'Contribution Payment Notification',
+      'button_link' => '',
+      'button_link_text' => '',
+      'lower_text' => 'For any complaints, kindly reach us using the information below',
+      'to' => 'pcollinso@yahoo.com',
+      'from_name' => 'NHIS',
+      'from_email' => 'noreply@nhis.com',
+      'reply_to' => '',
+      'reply_to_email' => '',
+      'reply_to_name' => '',
+      'cc' => array(
+        ['email' => 'pcollinso@yahoo.com', 'name' => 'Paulcollins Obi']
+      ),
+      'bcc' => array(),
+      'attachment' => array(
+        ['path' => public_path(('/images/attachments/test.xls')), 'display_name' => 'File attached']
+      )
+    );
+    Utility::send_email($params);*/
   }
 
   public function userBiometricData($id = ''){

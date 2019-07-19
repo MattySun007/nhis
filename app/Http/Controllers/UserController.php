@@ -117,8 +117,9 @@ class UserController extends Controller
     }
     if($user){
       $this->request->session()->put('currentUserId', $user->user_id);
-      $this->request->session()->put('currentUserVerificationNo', $user->verification_no);
+      $this->request->session()->put('currentUserVerificationNo', $user->user->verification_no);
       $this->request->session()->put('currentUserBiometricStatus', 0);
+      $this->request->session()->put('backUrl', url()->previous());
       return $user;
     }
     return false;
@@ -357,8 +358,9 @@ class UserController extends Controller
           ->orWhere('middle_name', 'LIKE', '%'.$str.'%')
           ->orWhere('email', 'LIKE', '%'.$str.'%')
           ->orWhere('phone', 'LIKE', '%'.$str.'%')
+          ->join('hcp_user', 'hcp_user.user_id', '=', 'users.id')
           ->with(['blood_group', 'genotype', 'marital_status', 'gender'])->get();
-        $users = $users->whereIn('hcp_user.hcp_id', auth()->user()->user_hcps)->all();
+        $users = $users->whereIn('hcp_id', auth()->user()->user_hcps)->all();
       }elseif(auth()->user()->user_type == 'Institution User'){
         $users = User::where('verification_no', $str)
           ->orWhere('last_name', 'LIKE', '%'.$str.'%')
@@ -366,8 +368,9 @@ class UserController extends Controller
           ->orWhere('middle_name', 'LIKE', '%'.$str.'%')
           ->orWhere('email', 'LIKE', '%'.$str.'%')
           ->orWhere('phone', 'LIKE', '%'.$str.'%')
+          ->join('institution_user', 'institution_user.user_id', '=', 'users.id')
           ->with(['blood_group', 'genotype', 'marital_status', 'gender'])->get();
-        $users = $users->whereIn('institution_user.institution_id', auth()->user()->user_institutions)->all();
+        $users = $users->whereIn('institution_id', auth()->user()->user_institutions)->all();
       }
     }elseif(isset($data['institution_id']) && is_numeric($data['institution_id'])){
 

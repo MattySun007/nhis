@@ -7,16 +7,86 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\File;
 use Intervention\Image\ImageManagerStatic as Image;
 use Log;
+use Illuminate\Http\Request;
+use Mail;
 
 class Utility 
 {
+
+  public static function send_email($params) {
+    $data = array(
+      'project_name' => ($params['project_name']) ?? env("APP_NAME"),
+      'title' => ($params['title']) ?? 'NHIS.::.Mail',
+      'message_body' => ($params['message_body']) ?? 'NHIS says Hi!!',
+      'message_header' => ($params['message_header']) ?? 'Welcome',
+      'button_link' => ($params['button_link']) ?? '',
+      'button_link_text' => ($params['button_link_text']) ?? '',
+      'lower_text' => ($params['lower_text']) ?? '',
+      'support_email' => ($params['support_email']) ?? env("SUPPORT_EMAIL"),
+      'support_phone' => ($params['support_phone']) ?? env("SUPPORT_PHONE"),
+      'website_link' => ($params['website_link']) ?? env("APP_URL"),
+      'website_name' => ($params['website_name']) ?? env("APP_NAME"),
+      'powered_by_link' => ($params['powered_by_link']) ?? env("POWERED_BY_LINK"),
+      'powered_by_name' => ($params['powered_by_name']) ?? env("POWERED_BY_NAME"),
+    );
+    Mail::send('mail.mail_verify', $data, function ($message) use ($params) {
+      $message->from($params['from_email'] ?? env("MAIL_FROM_ADDRESS"), $params['from_name'] ?? env("MAIL_FROM_NAME"));
+      $message->to($params['to']);
+      $message->subject($params['from_email']);
+      if(!empty($params['cc'])){
+        foreach($params['cc'] as $cc){
+          $message->cc($cc['email'], $cc['name']);
+        }
+      }
+      if(!empty($params['bcc'])){
+        foreach($params['bcc'] as $bcc){
+          $message->cc($bcc['email'], $bcc['name']);
+        }
+      }
+      if(!empty($params['attachment'])){
+        foreach($params['attachment'] as $file){
+          $message->attach($file['path'], ['as' => $file['display_name'].'.'.File::extension($file['path']), 'mime' => File::mimeType($file['path'])]);
+        }
+      }
+      empty($params['reply_to_email']) ?: $message->replyTo($params['reply_to_email'], $params['reply_to_name']);
+      //$message->getSwiftMessage();
+    });
+    return "Email Sent with attachment. Check your inbox.";
+  }
+
+  public static function listMonth() : array{
+    $month[] = array('value' => 0, 'name' => 'Select year');
+    $month[] = array('value' => 1, 'name' => 'January');
+    $month[] = array('value' => 2, 'name' => 'February');
+    $month[] = array('value' => 3, 'name' => 'March');
+    $month[] = array('value' => 4, 'name' => 'April');
+    $month[] = array('value' => 5, 'name' => 'May');
+    $month[] = array('value' => 6, 'name' => 'June');
+    $month[] = array('value' => 7, 'name' => 'July');
+    $month[] = array('value' => 8, 'name' => 'August');
+    $month[] = array('value' => 9, 'name' => 'September');
+    $month[] = array('value' => 10, 'name' => 'October');
+    $month[] = array('value' => 11, 'name' => 'November');
+    $month[] = array('value' => 12, 'name' => 'December');
+    return $month;
+  }
+
+  public static function listYear() : array{
+    $b=date('Y') + 5;
+    $year=array();
+    $year[] = array('value' => 0, 'name' => 'Select year');
+    for($a=$b;$a>=(date('Y') - 3);$a--){
+      $year[] = array('value' => $a, 'name' => $a);
+    }
+    return $year;
+  }
 
   public static function hashString($pass){
     return md5(md5(sha1(sha1(md5($pass)))));
   }
 
   public static function getConvertImage($params) {
-    return Image::make($params['file_path'])->resize($params['width'], $params['height'])->encode($params['format'], $params['quality'])->save($params['save_path']) ? true : false;
+    return Image::make(urldecode($params['file_path']))->resize($params['width'], $params['height'])->encode($params['format'], $params['quality'])->save($params['save_path']) ? true : false;
   }
 
   public static function getStoredImage($name, $env_path){

@@ -34,6 +34,7 @@ Route::group(['middleware' => ['query_log']], function () {
     Route::get('codes/hcp', ['uses' => '\App\Http\Controllers\HcpController@getHcpCode', 'as' => 'HcpController@getHcpCode']);
     Route::get('codes/hcp/{code}/treatments', ['uses' => '\App\Http\Controllers\TreatmentController@getTreatmentCode', 'as' => 'TreatmentController@getTreatmentCode']);
     Route::get('codes/user', ['uses' => '\App\Http\Controllers\UserController@getUserCode', 'as' => 'UserController@getUserCode']);
+    Route::get('codes/contributions/batchCode/{m}/{y}', ['uses' => '\App\Http\Controllers\ContributionController@getBatchCode', 'as' => 'contributions.getBatchCode']);
     Route::match(['get', 'post'], 'logout', ['uses' => '\App\Http\Controllers\Auth\LoginController@logout', 'as' => 'logout']);
     Route::get('/', ['uses' => '\App\Http\Controllers\DashboardController@index', 'as' => 'dashboard']);
 
@@ -483,6 +484,74 @@ Route::group(['middleware' => ['query_log']], function () {
       ]
     );
 
+    /**
+     * contributions
+     */
+
+    Route::get(
+      'contributions',
+      [
+        'uses' => '\App\Http\Controllers\ContributionController@index',
+        'as' => 'contributions.index',
+        'middleware' => 'permission:contributions:read,contributions:process,contributions:approve,contributions:manage'
+      ]
+    );
+    Route::post(
+      'contributions/history',
+      [
+        'uses' => '\App\Http\Controllers\ContributionController@history',
+        'as' => 'contributions.history',
+        'middleware' => 'permission:contributions:read,contributions:manage'
+      ]
+    );
+    Route::post(
+      'contributions/process',
+      [
+        'uses' => '\App\Http\Controllers\ContributionController@process',
+        'as' => 'contributions.process',
+        'middleware' => 'permission:contributions:process,contributions:manage'
+      ]
+    );
+    Route::post(
+      'contributions/approve',
+      [
+        'uses' => '\App\Http\Controllers\ContributionController@approve',
+        'as' => 'contributions.approve',
+        'middleware' => 'permission:contributions:approve,contributions:manage'
+      ]
+    );
+    Route::post(
+      'contributions/fetch/process',
+      [
+        'uses' => '\App\Http\Controllers\ContributionController@fetchProcess',
+        'as' => 'contributions.fetch.process',
+        'middleware' => 'permission:contributions:read,contributions:process,contributions:manage'
+      ]
+    );
+    Route::post(
+      'contributions/fetch/approve',
+      [
+        'uses' => '\App\Http\Controllers\ContributionController@fetchApprove',
+        'as' => 'contributions.fetch.approve',
+        'middleware' => 'permission:contributions:read,contributions:approve,contributions:manage'
+      ]
+    );
+    Route::post(
+      'contributions/process/do',
+      [
+        'uses' => '\App\Http\Controllers\ContributionController@doProcess',
+        'as' => 'contributions.process.do',
+        'middleware' => 'permission:contributions:process,contributions:manage'
+      ]
+    );
+    Route::post(
+      'contributions/approve/do',
+      [
+        'uses' => '\App\Http\Controllers\ContributionController@doApprove',
+        'as' => 'contributions.approve.do',
+        'middleware' => 'permission:contributions:approve,contributions:manage'
+      ]
+    );
 
 
   });

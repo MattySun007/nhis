@@ -23,7 +23,10 @@ class HasPermission
 
             if(!$hasAnyPermission)
             {
-                abort(404);
+              if ($request->ajax())
+              {
+                return response()->json(['error' => 'Unauthorized Access: ensure you have the permissions for this route!'], 403);
+              }
             }
         }
 

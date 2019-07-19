@@ -38,8 +38,8 @@ class PermissionSeeder extends Seeder
     Permission::create(['name' => 'institution-hcp:read']);
     Permission::create(['name' => 'institution-hcp:create']);
     Permission::create(['name' => 'institution-hcp:delete']);
-    Permission::create(['name' => 'contributions:create']);
-    Permission::create(['name' => 'contributions:update']);
+    Permission::create(['name' => 'contributions:process']);
+    Permission::create(['name' => 'contributions:approve']);
     Permission::create(['name' => 'contributions:delete']);
     Permission::create(['name' => 'contributions:read']);
     Permission::create(['name' => 'contributions:manage']);

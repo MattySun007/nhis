@@ -353,6 +353,7 @@
                 $(this.$refs.modal).modal('hide');
                 this.localUsers.push(data);
                 this.user = { ...defaultUser };
+                window.location.href = '/biometric/start';
               }else{
                 this.errors = message;
               }

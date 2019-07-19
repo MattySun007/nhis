@@ -191,6 +191,7 @@ export default {
             $(this.$refs.userModal).modal('hide');
             this.users.push(data);
             this.user = { ...defaultUser };
+            window.location.href = '/biometric/start';
           } else {
             alert(message);
           }
