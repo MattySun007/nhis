@@ -21,8 +21,10 @@ Route::group(['middleware' => ['query_log']], function () {
     Route::get('/getPassword', ['uses' => '\App\Http\Controllers\UserController@getPassword', 'as' => 'getPassword']);
   });
 
-  Route::get('biometric/return-url', ['uses' => '\App\Http\Controllers\BiometricController@success', 'as' => 'BiometricController@success']);
-  Route::get('biometric/error-url', ['uses' => '\App\Http\Controllers\BiometricController@error', 'as' => 'BiometricController@error']);
+  Route::get('biometric/identify/return-url', ['uses' => '\App\Http\Controllers\BiometricController@successIdentify', 'as' => 'biometric.successIdentify']);
+  Route::get('biometric/identify/error-url', ['uses' => '\App\Http\Controllers\BiometricController@errorIdentify', 'as' => 'biometric.errorIdentify']);
+  Route::get('biometric/verify/return-url', ['uses' => '\App\Http\Controllers\BiometricController@successVerify', 'as' => 'biometric.successVerify']);
+  Route::get('biometric/verify/error-url', ['uses' => '\App\Http\Controllers\BiometricController@errorVerify', 'as' => 'biometric.errorVerify']);
 
 
   Route::group(['middleware' => ['auth']], function () {
@@ -35,6 +37,7 @@ Route::group(['middleware' => ['query_log']], function () {
     Route::get('codes/hcp/{code}/treatments', ['uses' => '\App\Http\Controllers\TreatmentController@getTreatmentCode', 'as' => 'TreatmentController@getTreatmentCode']);
     Route::get('codes/user', ['uses' => '\App\Http\Controllers\UserController@getUserCode', 'as' => 'UserController@getUserCode']);
     Route::get('codes/contributions/batchCode/{m}/{y}', ['uses' => '\App\Http\Controllers\ContributionController@getBatchCode', 'as' => 'contributions.getBatchCode']);
+    Route::post('nuban-check', ['uses' => '\App\Utilities\Utility@nubanCheck', 'as' => 'utility.nubanCheck']);
     Route::match(['get', 'post'], 'logout', ['uses' => '\App\Http\Controllers\Auth\LoginController@logout', 'as' => 'logout']);
     Route::get('/', ['uses' => '\App\Http\Controllers\DashboardController@index', 'as' => 'dashboard']);
 
@@ -43,10 +46,18 @@ Route::group(['middleware' => ['query_log']], function () {
      */
     Route::match(['get', 'post'], 'biometric/user/{id?}', ['uses' => '\App\Http\Controllers\BiometricController@userBiometricData', 'as' => 'biometric/user']);
     Route::get(
-      'biometric/start',
+      'biometric/identify/start',
       [
-        'uses' => '\App\Http\Controllers\BiometricController@index',
-        'as' => 'BiometricController@index',
+        'uses' => '\App\Http\Controllers\BiometricController@identify',
+        'as' => 'biometric.identify',
+        'middleware' => 'permission:agency-users:create,users:create,individual-contributors:create,institution-users:create,hcp-users:read'
+      ]
+    );
+    Route::get(
+      'biometric/verify/start/{id}',
+      [
+        'uses' => '\App\Http\Controllers\BiometricController@verify',
+        'as' => 'biometric.verify',
         'middleware' => 'permission:agency-users:create,users:create,individual-contributors:create,institution-users:create,hcp-users:read'
       ]
     );
@@ -322,24 +333,34 @@ Route::group(['middleware' => ['query_log']], function () {
       'hcp/{id}/treatments',
       [
         'uses' => '\App\Http\Controllers\TreatmentController@index',
-        'as' => 'TreatmentController@index',
+        'as' => 'treatment.index',
         'middleware' => 'permission:treatments:read'
       ]
     );
     Route::get(
-      'hcp/{id}/treatments/verify/{str}',
+      'treatments',
       [
         'uses' => '\App\Http\Controllers\TreatmentController@verify',
-        'as' => 'TreatmentController@verify',
-        'middleware' => 'permission:treatments:read'
+        'as' => 'treatment.verify',
+        'middleware' => 'permission:treatments:create,treatments:read,treatments:verify'
       ]
     );
+
     Route::post(
       'treatments',
       [
         'uses' => '\App\Http\Controllers\TreatmentController@create',
-        'as' => 'TreatmentController@create',
+        'as' => 'treatment.create',
         'middleware' => 'permission:treatments:create'
+      ]
+    );
+
+    Route::post(
+      'treatments/verify-confirm',
+      [
+        'uses' => '\App\Http\Controllers\TreatmentController@verifyConfirm',
+        'as' => 'treatment.verifyConfirm',
+        'middleware' => 'permission:treatments:verify-confirm'
       ]
     );
 
@@ -347,7 +368,7 @@ Route::group(['middleware' => ['query_log']], function () {
       'treatments/{id}',
       [
         'uses' => '\App\Http\Controllers\TreatmentController@update',
-        'as' => 'TreatmentController@update',
+        'as' => 'treatment.update',
         'middleware' => 'permission:treatments:update'
       ]
     );
@@ -355,7 +376,7 @@ Route::group(['middleware' => ['query_log']], function () {
       'treatments/{id}',
       [
         'uses' => '\App\Http\Controllers\TreatmentController@deleteTreatment',
-        'as' => 'TreatmentController@deleteTreatment',
+        'as' => 'treatment.deleteTreatment',
         'middleware' => 'permission:treatments:delete'
       ]
     );
@@ -509,7 +530,7 @@ Route::group(['middleware' => ['query_log']], function () {
       [
         'uses' => '\App\Http\Controllers\ContributionController@process',
         'as' => 'contributions.process',
-        'middleware' => 'permission:contributions:process,contributions:manage'
+        'middleware' => 'permission:contributions:process,contributions:manage,contributions:read'
       ]
     );
     Route::post(
@@ -517,7 +538,15 @@ Route::group(['middleware' => ['query_log']], function () {
       [
         'uses' => '\App\Http\Controllers\ContributionController@approve',
         'as' => 'contributions.approve',
-        'middleware' => 'permission:contributions:approve,contributions:manage'
+        'middleware' => 'permission:contributions:approve,contributions:manage,contributions:read'
+      ]
+    );
+    Route::post(
+      'contributions/pay',
+      [
+        'uses' => '\App\Http\Controllers\ContributionController@pay',
+        'as' => 'contributions.pay',
+        'middleware' => 'permission:contributions:pay,contributions:manage,contributions:read'
       ]
     );
     Route::post(
@@ -541,7 +570,7 @@ Route::group(['middleware' => ['query_log']], function () {
       [
         'uses' => '\App\Http\Controllers\ContributionController@doProcess',
         'as' => 'contributions.process.do',
-        'middleware' => 'permission:contributions:process,contributions:manage'
+        'middleware' => 'permission:contributions:process,contributions:manage,contributions:read'
       ]
     );
     Route::post(
@@ -549,7 +578,15 @@ Route::group(['middleware' => ['query_log']], function () {
       [
         'uses' => '\App\Http\Controllers\ContributionController@doApprove',
         'as' => 'contributions.approve.do',
-        'middleware' => 'permission:contributions:approve,contributions:manage'
+        'middleware' => 'permission:contributions:approve,contributions:manage,contributions:read'
+      ]
+    );
+    Route::post(
+      'contributions/pay/do',
+      [
+        'uses' => '\App\Http\Controllers\ContributionController@doPay',
+        'as' => 'contributions.pay.do',
+        'middleware' => 'permission:contributions:pay,contributions:manage,contributions:read'
       ]
     );
 

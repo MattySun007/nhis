@@ -31,7 +31,7 @@ export default {
         return 0
       }
       return cur + ' ' + (value/1).toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,")
-    }
+    },
   },
   methods: {
     applyFilter(filterName, val) {

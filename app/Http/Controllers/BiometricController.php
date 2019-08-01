@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Contribution;
 use App\Models\Institution;
+use Illuminate\Support\Facades\URL;
 use Log;
 use App\Utilities\Utility;
 use App\Models\User;
 use App\Models\UserBiometric;
+use App\Models\HcpUser;
+use App\Models\InstitutionUser;
+use App\Models\TreatmentUser;
 use Illuminate\Support\Facades\File;
 use Intervention\Image\ImageManagerStatic as Image;
 
@@ -27,12 +31,12 @@ class BiometricController extends Controller
   private $return_url = '';
   private $error_url = '';
 
-  public function index()
+  public function identify()
   {
-    $this->api_key = env('BIOMETRIC_KEY');
-    $this->url = env('BIOMETRIC_URL');
-    $this->return_url = url(env('BIOMETRIC_RETURN_URL'));
-    $this->error_url = url(env('BIOMETRIC_ERROR_URL'));
+    $this->api_key = env('BIOMETRIC_IDENTIFY_KEY');
+    $this->url = env('BIOMETRIC_IDENTIFY_URL');
+    $this->return_url = url(env('BIOMETRIC_IDENTIFY_RETURN_URL'));
+    $this->error_url = url(env('BIOMETRIC_IDENTIFY_ERROR_URL'));
     $userData = array(
       'key' => $this->api_key,
       'UserID' => $this->request->session()->get('currentUserId'),
@@ -58,7 +62,7 @@ class BiometricController extends Controller
       return [
         'success' => false,
         'message' => 'Validation failed',
-        'url' => url("biometric/start"),
+        'url' => url(env('BIOMETRIC_IDENTIFY_START_URL')),
         'data' => $v_err
       ];
     }
@@ -84,13 +88,37 @@ class BiometricController extends Controller
         'width' => 300,
         'height' => 300,
         'format' => 'jpg',
-        'save_path' => public_path('images/biometrics/'.$user->verification_no.'.jpg'),
+        'save_path' => public_path(env('BIOMETRIC_IMAGE_DIR').$user->verification_no.'.jpg'),
         'quality' => 60));
     } catch(\Exception $e) {
       Log::info("Error getting image {$e->getTraceAsString()}");
     }
 
     if($getImage){
+      /**
+       * send email
+       */
+      $params = array(
+        'subject' => 'New '.env("APP_NAME").' User/Contributor created',
+        'message_body' => "<table border='1' cellpadding=\"2\" cellspacing=\"2\"><thead> </thead><tbody>
+                   <tr><th colspan='2'>Your account as a User/Contributor has just been successfully created, find below the details</th></tr> 
+                   <tr><th>Name: </th><td>". $user->last_name.' '.$user->first_name."</td></tr> 
+                   <tr><th>Verification No: </th><td>". $user->verification_no."</td></tr>
+                   <tr><th>Phone: </th><td>". $user->phone."</td></tr>
+                   <tr><th>Email: </th><td>". $user->email."</td></tr>
+                   <tr><th>Date: </th><td>". $user->created_at."</td></tr></tbody></table>",
+        'message_header' => 'User/Contributor Creation',
+        'button_link' => '',
+        'button_link_text' => '',
+        'to' => $user->email,
+        'cc' => array(
+          ['email' => env("SUPPORT_EMAIL"), 'name' => env("SUPPORT_NAME").' Support']
+        ),
+        'bcc' => array(
+          ['email' => env("SUPPORT_BCC"), 'name' => 'Support Bcc']
+        ),
+      );
+      Utility::send_email($params);
       return [
         'success' => true,
         'message' => !$is_exists ? $success : "This biometric exists for user:: ".$user->last_name. ' '.$user->first_name. '( ' . $user->verification_no . ' )',
@@ -113,22 +141,16 @@ class BiometricController extends Controller
       return [
         'success' => false,
         'message' => 'Could not get image',
-        'url' => url("biometric/start"),
+        'url' => url(env('BIOMETRIC_IDENTIFY_START_URL')),
         'data' => $error
       ];
     }
   }
 
-  public function success(){
+  public function successIdentify(){
     $current_user_id = $this->request->session()->get('currentUserId');
     $current_vno = $this->request->session()->get('currentUserVerificationNo');
     $userStr = "(current user: $current_user_id, vno: $current_vno)";
-
-    // arbitrary
-    /*$this->api_key = 'RhuNkU266WTPyymNS2GApbSWO';
-    $current_vno = 'USER-11112223';
-    $current_user_id = 2;
-    $this->request->session()->put('backUrl', 'hcps');*/
 
     $data = [
       'class_id' => $_GET['ImageID'],
@@ -138,9 +160,6 @@ class BiometricController extends Controller
       'verification_no' => $current_vno,
       'biometric_status' => 1
     ];
-
-    // remove session data
-    //$this->request->session()->forget(['currentUserVerificationNo', 'currentUserId', 'currentUserBiometricStatus']);
 
     if ($_GET['status'] == 200) { // New enrolment
       return view('biometrics.list', $this->save_bio($data));
@@ -180,15 +199,133 @@ class BiometricController extends Controller
     }
   }
 
-  public function error(){
+  public function errorIdentify(){
     $error = $this->request->error ? urldecode($this->request->error) : '';
+    $start = url(env('BIOMETRIC_IDENTIFY_START_URL'));//dd("<h3>Biometric capture not successful .:: <span style='color: #b94630'>[ ".$error." ]</span></h3><p><a href='.$start.'>Go back</a></p>");
     Log::info('Biometric error occurred:: '."Received URL {$_SERVER['REQUEST_URI']}");
-    echo "<h3>Biometric capture not successful .:: <span style='color: #b94630'>[ ".$error." ]</span></h3><p><a href='/biometric/start'>Go back</a></p>";
+    echo "<h3>Biometric capture not successful .::. <span style='color: #b94630'>[ ".$error." ]</span></h3><p><a href=".$start.">Go back</a></p>";
   }
+
+  public function verify($payload)
+  {
+    $this->request->session()->put('bioVerifyData', $payload);
+    $payload = json_decode(base64_decode($payload));
+    $bio = UserBiometric::where('user_id', $payload->user_id)->select('class_id','user_id')->first();
+    if($bio){
+      $this->api_key = env('BIOMETRIC_VERIFY_KEY');
+      $this->url = env('BIOMETRIC_VERIFY_URL');
+      $this->return_url = url(env('BIOMETRIC_VERIFY_RETURN_URL'));
+      $this->error_url = url(env('BIOMETRIC_VERIFY_ERROR_URL'));
+      $userData = array(
+        'key' => $this->api_key,
+        'UserID' => $bio->user_id,
+        'callID' => $bio->class_id,
+        'ReturnUrl' => $this->return_url,
+        'ErrorUrl' =>  $this->error_url
+      );
+      $ch = curl_init($this->url);
+      curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
+      curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+      curl_setopt($ch, CURLOPT_HTTPHEADER, array("X-API-KEY: " . $this->api_key));
+      curl_setopt($ch, CURLOPT_POST, 1);
+      curl_setopt($ch, CURLOPT_POSTFIELDS, $userData);
+      $result = curl_exec($ch);
+      curl_close($ch);
+      echo $result;
+    }else{
+      echo "<h3>User do not exist or inactive (biometric data not found) !</h3><p><a href=".$payload->last_url.">Go back</a></p>";
+    }
+  }
+
+  public function successVerify(){
+    $message = '';
+    $payload = $this->request->session()->has('bioVerifyData') ? $this->request->session()->get('bioVerifyData') : [];
+    $payload = json_decode(base64_decode($payload));
+    if ($_GET['status'] == 201) { // user verified
+      if($payload->action == 'add_hcp_user'){
+        $user = User::where('id',$payload->user_id)->first();
+        $user->assignHcpUserPermissions();
+        if(HcpUser::create(['user_id' => $payload->user_id, 'hcp_id' => $payload->hcp_id])){
+          $message = "HCP User successfully created";
+        }
+      }elseif($payload->action == 'add_institution_user'){
+        $user = User::where('id',$payload->user_id)->first();
+        $user->assignInstitutionUserPermissions();
+        if(InstitutionUser::create(['user_id' => $payload->user_id, 'institution_id' => $payload->institution_id])){
+          $message = "Institution User successfully created";
+        }
+      }elseif($payload->action == 'hcp_verify_user'){
+        $b = Utility::generateVerificationCode(TreatmentUser::class);
+        if(TreatmentUser::create(['user_id' => $payload->user_id, 'hcp_id' => $payload->hcp_id,'verification_code' => $b, 'verified_by' => auth()->user()->id])){
+          $message = "User successfully verified and ready for treatment";
+        }
+      }
+      echo "<h3>Biometric verified .::. <span style='color: green'>[ ... this user biometric matches, thus $message ]</span></h3><p><a href=".$payload->last_url.">Go back</a></p>";
+    } elseif($_GET['status'] == 404) { // user not verified
+      echo "<h3>Biometric not verified .::. <span style='color: #b94630'>[ ... this user biometric do not match ]</span></h3><p><a href=".$payload->last_url.">Go back</a></p>";
+    }
+  }
+
+  public function errorVerify(){
+    $error = $this->request->error ? urldecode($this->request->error) : '';
+    $payload = $this->request->session()->has('bioVerifyData') ? $this->request->session()->get('bioVerifyData') : '';
+    $start = url(env('BIOMETRIC_VERIFY_START_URL')).'/'.$payload;
+    Log::info('Verification error occurred:: '."Received URL {$_SERVER['REQUEST_URI']}");
+    echo "<h3>Verification not successful .:: <span style='color: #b94630'>[ ".$error." ]</span></h3><p><a href=".$start.">Go back</a></p>";
+  }
+
 
   public function test()
   {
+    $data_for_nuban_check_post = array(
+      'vendor_code' => '555600987',//'555600987',8875365312
+      'account_number' => '3018383756',
+      'bank_code' => '011',
+    );
+    $request_headers = array();
+    $request_headers[] = 'apikey: x0jPnHLb2A9E6nNIGkzl';
+    $request_headers[] = 'Content-Type: application/json';
+    $request_headers[] = 'Accept: application/json';
+    $request_headers[] = 'User-Agent: Apache-HttpClient/4.1.1 ';
+    $request_headers[] = 'Connection: Keep-Alive';
 
+
+    $result = Utility::make_post_request($data_for_nuban_check_post,'https://api.appmartgroup.com/v2/accounts/nubanCheckPost', $request_headers);
+    $res = "Error: request not successful!";
+    if($result) {
+      $result = json_decode(($result));
+      if(isset($result->Message)){
+        $res = $result->Message;
+      }elseif(isset($result->status) && $result->status == '00'){
+        $res = $result->accountName;
+      }
+    }
+
+    dd($res);
+
+    /*$params = array(
+      'subject' => 'Institution Creation',
+      'message_body' => "<table border='1' cellpadding=\"2\" cellspacing=\"2\"><thead> </thead><tbody>
+                   <tr><th colspan='2'>Your institution/company has just been successfully created, Please find below the details</th></tr> 
+                   <tr><th>Name: </th><td>erwerwer</td></tr> 
+                   <tr><th>Code: </th><td>323141234</td></tr>
+                  
+                   <tr><th>Date: </th><td>33434134</td></tr></tbody></table>",
+      'message_header' => 'New '.env("APP_NAME").' Institution created',
+      'button_link' => '',
+      'button_link_text' => '',
+      'to' => 'pcollinso@yahoo.com',
+      'cc' => array(
+        ['email' => env("SUPPORT_EMAIL"), 'name' => env("SUPPORT_NAME").' Support']
+      ),
+      'bcc' => array(
+        ['email' => env("SUPPORT_BCC"), 'name' => 'Support Bcc']
+      ),
+    );
+    Utility::send_email($params);*/
+    dd();
+//dd(Utility::getStoredImage('USER-68062329','BIOMETRIC_IMAGE_DIR'));
     //Log::info('this is recorded');
 
     /*$users = User::where('id',1)->select('id','email','phone','verification_no')->get();
@@ -229,8 +366,8 @@ class BiometricController extends Controller
       'button_link' => '',
       'button_link_text' => '',
       'lower_text' => 'For any complaints, kindly reach us using the information below',
-      'to' => 'pcollinso@yahoo.com',
-      'from_name' => 'NHIS',
+      'to' => @yahoo.com',
+      'from_n'pcollinsoame' => 'NHIS',
       'from_email' => 'noreply@nhis.com',
       'reply_to' => '',
       'reply_to_email' => '',

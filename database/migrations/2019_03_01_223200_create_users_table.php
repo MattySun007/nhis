@@ -31,7 +31,7 @@ class CreateUsersTable extends Migration
       $table->tinyInteger('genotype_id')->unsigned()->nullable()->index();
       $table->tinyInteger('blood_group_id')->unsigned()->nullable()->index();
       $table->tinyInteger('gender_id')->unsigned()->nullable()->index();
-      $table->boolean('status')->default('1');
+      $table->boolean('status')->default('0');
       $table->decimal('contribution_amount', 20, 2)->default('0.0');
       $table->rememberToken();
       $table->timestamps();

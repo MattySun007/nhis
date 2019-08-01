@@ -6,10 +6,18 @@ use Log;
 use App\Utilities\Utility;
 use App\Models\Hcp;
 use App\Models\Treatment;
+use App\Models\TreatmentUser;
 use Illuminate\Support\Facades\DB;
 
 class TreatmentController extends Controller
 {
+
+  public function verify()
+  {
+    return view('treatments.list', [
+      'hcps' => Hcp::whereIn('id', auth()->user()->user_hcps)->with(['town', 'country', 'state', 'lga', 'hcp_type', 'bank'])->get()->all()
+    ]);
+  }
 
   public function index($id)
   {
@@ -81,7 +89,7 @@ class TreatmentController extends Controller
     return response()->json([
       'success' => true,
       'message' => 'Treatment deleted',
-      'data' => []
+      'data' => Treatment::destroy($id)
     ], 200);
   }
 
@@ -107,6 +115,20 @@ class TreatmentController extends Controller
       'message' => 'Treatment code generated',
       'data' => array('code' => $this->generateTreatmentCode($code))
     ]);
+  }
+
+  public function verifyConfirm()
+  {
+    $data = $this->request->all();//$data['str'], 'TREAT_4909645149'
+    $user = TreatmentUser::where('verification_code', $data['str'])->with(['user', 'hcp'])->first();
+    return response()->json([
+      'success' => (bool) $user,
+      'message' => $user ? 'Verification confirmed' : 'Verification not confirmed!',
+      'data' => [
+        'user' => $user,
+        'img_url' => Utility::getStoredImage($user->user->verification_no,'BIOMETRIC_IMAGE_DIR'),
+      ]
+    ], 200);
   }
 
 

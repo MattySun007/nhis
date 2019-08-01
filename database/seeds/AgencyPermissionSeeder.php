@@ -45,8 +45,9 @@ class AgencyPermissionSeeder extends Seeder
     AgencyPermission::create(['name' => 'adoption:update']);
     AgencyPermission::create(['name' => 'adoption:delete']);
     AgencyPermission::create(['name' => 'adoption:read']);
-    AgencyPermission::create(['name' => 'contributions:create']);
-    AgencyPermission::create(['name' => 'contributions:update']);
+    AgencyPermission::create(['name' => 'contributions:pay']);
+    AgencyPermission::create(['name' => 'contributions:process']);
+    AgencyPermission::create(['name' => 'contributions:approve']);
     AgencyPermission::create(['name' => 'contributions:delete']);
     AgencyPermission::create(['name' => 'contributions:read']);
     AgencyPermission::create(['name' => 'permissions:manage']);

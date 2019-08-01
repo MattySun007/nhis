@@ -19,6 +19,7 @@ class CreateTreatmentsTable extends Migration
       $table->bigInteger('referer_hcp_id')->unsigned()->nullable()->index();
       $table->bigInteger('user_id')->unsigned()->nullable()->index();
       $table->string('code', 20)->unique();
+      $table->string('verification_code', 20)->index();
       $table->decimal('bill', 20, 2);
       $table->string('medical_officer', 100)->nullable();
       $table->longText('diagnosis')->nullable();

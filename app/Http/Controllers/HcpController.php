@@ -41,6 +41,36 @@ class HcpController extends Controller
     $hcp = new Hcp($data);
     $hcp->save();
     $hcp->loadMissing(['town', 'country', 'state', 'lga', 'hcp_type', 'bank']);
+    /**
+     * send email
+     */
+    $params = array(
+      'subject' => 'New '.env("APP_NAME").' HCP created',
+      'message_body' => "<table border='1' cellpadding=\"2\" cellspacing=\"2\"><thead> </thead><tbody>
+                   <tr><th colspan='2'>Your HCP has just been successfully created, Please find below the details</th></tr> 
+                   <tr><th>Name: </th><td>". $hcp->name."</td></tr> 
+                   <tr><th>Code: </th><td>". $hcp->code."</td></tr>
+                   <tr><th>Phone: </th><td>". $hcp->phone."</td></tr>
+                   <tr><th>Email: </th><td>". $hcp->email."</td></tr>
+                   <tr><th>Hcp type: </th><td>". $hcp->hcp_type->hcp_type."</td></tr>
+                   <tr><th>Bank: </th><td>". $hcp->bank->bank_name."</td></tr>
+                   <tr><th>Account: </th><td>". $hcp->account_number."</td></tr>
+                   <tr><th>Country: </th><td>". $hcp->country->country."</td></tr>
+                   <tr><th>State: </th><td>". $hcp->state->name."</td></tr>
+                   <tr><th>LGA: </th><td>". $hcp->lga->name."</td></tr>
+                   <tr><th>Date: </th><td>". $hcp->created_at."</td></tr></tbody></table>",
+      'message_header' => 'HCP Creation',
+      'button_link' => '',
+      'button_link_text' => '',
+      'to' => $hcp->email,
+      'cc' => array(
+        ['email' => env("SUPPORT_EMAIL"), 'name' => env("SUPPORT_NAME").' Support']
+      ),
+      'bcc' => array(
+        ['email' => env("SUPPORT_BCC"), 'name' => 'Support Bcc']
+      ),
+    );
+    Utility::send_email($params);
     return response()->json([
       'success' => true,
       'message' => 'Hcp created',

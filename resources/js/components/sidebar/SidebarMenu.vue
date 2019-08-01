@@ -28,7 +28,7 @@
     },
     { path: '#', icon: 'fa fa-ambulance', title: 'Treatment', permissions: ['treatments:read'],
       children: [
-        { path: '/treatments', title: 'List', permissions: ['treatments:read'] }
+        { path: '/treatments', title: 'List', permissions: ['treatments:read','treatments:verify','treatments:verify-confirm','treatments:create'] }
       ]
     },
     { path: '#', icon: 'fa fa-lock', title: 'Access Rights', permissions: ['permissions:manage'],

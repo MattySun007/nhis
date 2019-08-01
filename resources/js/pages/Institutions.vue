@@ -46,6 +46,7 @@
                     <td>{{ i.town.name }}</td>
                     <!--<td>{{ i.address }}</td>-->
                     <td v-if="canUpdate" class="with-btn" nowrap>
+                      <a :href="institutionUsersLink(i)" class="btn btn-sm btn-white">Users</a>
                       <button
                         @click.stop.prevent="view(i)"
                         class="btn btn-sm btn-secondary m-r-2"
@@ -60,6 +61,8 @@
                         @click.stop.prevent="activate(i)"
                         class="btn btn-sm btn-secondary"
                       >Activate</button>
+                    </td>
+                    <td v-else class="with-btn" nowrap>
                       <a :href="institutionUsersLink(i)" class="btn btn-sm btn-white">Users</a>
                     </td>
                   </tr>

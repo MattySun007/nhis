@@ -24,8 +24,9 @@ class InstitutionPermissionSeeder extends Seeder
     InstitutionPermission::create(['name' => 'adoption:delete']);
     InstitutionPermission::create(['name' => 'adoption:read']);
     
-    InstitutionPermission::create(['name' => 'contributions:create']);
-    InstitutionPermission::create(['name' => 'contributions:update']);
+    InstitutionPermission::create(['name' => 'contributions:process']);
+    InstitutionPermission::create(['name' => 'contributions:approve']);
+    InstitutionPermission::create(['name' => 'contributions:pay']);
     InstitutionPermission::create(['name' => 'contributions:delete']);
     InstitutionPermission::create(['name' => 'contributions:read']);
     InstitutionPermission::create(['name' => 'permissions:manage']);

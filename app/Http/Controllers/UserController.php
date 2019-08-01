@@ -372,10 +372,14 @@ class UserController extends Controller
           ->with(['blood_group', 'genotype', 'marital_status', 'gender'])->get();
         $users = $users->whereIn('institution_id', auth()->user()->user_institutions)->all();
       }
-    }elseif(isset($data['institution_id']) && is_numeric($data['institution_id'])){
+    }elseif(isset($data['by_institution']) && $data['by_institution'] == 1){
+      if(isset($data['institution_id']) && is_numeric($data['institution_id'])){
 
-    }elseif(isset($data['hcp_id']) && is_numeric($data['hcp_id'])){
+      }
+    }elseif(isset($data['by_hcp']) && $data['by_hcp'] == 1){
+      if(isset($data['hcp_id']) && is_numeric($data['hcp_id'])){
 
+      }
     }elseif(isset($data['is_adoptees']) && $data['is_adoptees'] == 1){
       $users = User::where('verification_no', $str)
         ->orWhere('last_name', 'LIKE', '%'.$str.'%')

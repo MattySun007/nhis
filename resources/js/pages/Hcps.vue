@@ -65,77 +65,7 @@
                       @click.stop.prevent="activate(i)"
                       class="btn btn-sm btn-secondary"
                     >Activate</button>
-                    <button
-                      v-if="canReadTreatment"
-                      @click.stop.prevent="treatments(i)"
-                      class="btn btn-sm btn-secondary"
-                    >Treatments</button>
                     <a v-if="canReadHcpUsers" :href="hcpUsersLink(i)" class="btn btn-sm btn-secondary">Users</a>
-                  </td>
-                </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div v-else class="col-sm-12" id="view-treatment">
-        <div class="panel panel-inverse">
-          <div class="panel-heading">
-            <h4 class="panel-title">HCP-Treatment</h4>
-          </div>
-          <div class="panel-body">
-            <button
-              v-if="canAddTreatment"
-              class="btn btn-sm btn-secondary"
-              @click.stop.prevent="viewTreatment(null)"
-            >Add Treatment</button>
-            <button
-              class="btn btn-sm btn-secondary"
-              @click.stop.prevent="selectedHcp = null"
-            >Back to Hcps</button>
-            <div class="table-responsive">
-              <table class="table table-striped m-b-0">
-                <thead>
-                <tr>
-                  <th>Code</th>
-                  <th>User</th>
-                  <th>Bill</th>
-                  <th>Med. Officer</th>
-                  <th>Med. Condition</th>
-                  <th>Diagnosis</th>
-                  <th>Medication</th>
-                  <th>Date</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr v-if="!localTreatments.length">
-                  <td colspan="13" class="text-center">No Treatments</td>
-                </tr>
-                <tr v-for="i in localTreatments" :key="i.id">
-                  <td>{{ i.code }}</td>
-                  <td>{{ i.user.last_name + ' ' + i.user.first_name + ' (' + i.user.verification_no + ')' }}</td>
-                  <td>{{ i.bill }}</td>
-                  <td>{{ i.medical_officer }}</td>
-                  <td>{{ i.diagnosis }}</td>
-                  <td>{{ i.medical_condition }}</td>
-                  <td>{{ i.medication_administered }}</td>
-                  <td>{{ i.created_at }}</td>
-                  <td>{{ i.paid === 1 ? 'Paid' : 'Not-Paid' }}</td>
-                  <td class="with-btn" nowrap>
-                    <button
-                      v-if="canUpdateTreatment && !i.paid"
-                      @click.stop.prevent="viewTreatment(i)"
-                      class="btn btn-xs btn-secondary m-r-2"
-                    >View/Edit</button>
-                    <button
-                      v-if="canDeleteTreatment"
-                      @click.stop.prevent="deleteTreatment(i)"
-                      class="btn btn-xs btn-secondary"
-                    >Delete</button>
                   </td>
                 </tr>
                 </tbody>
@@ -207,7 +137,10 @@
                 <div class="form-group row">
                   <label class="control-label col-md-4 col-sm-4">Account Name </label>
                   <div class="col-md-6 col-sm-6">
-                    <input readonly type="text" class="form-control" v-model.trim="hcp.account_name">
+                    <div>
+                      <input readonly type="text" class="form-control" v-model.trim="hcp.account_name">
+                      <span v-if="!nubanFetched && nubanCalled"><i class="fa fa-spinner fa-spin fa-fw"></i></span>
+                    </div>
                   </div>
                 </div>
                 <div class="form-group row">
@@ -279,69 +212,6 @@
         </div>
       </div>
 
-      <div ref="addTreatmentModal" class="modal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">{{ selectedTitle }}</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body">
-              <div v-if="errors.length" class="alert alert-warning" v-html="errors" />
-              <form>
-                <div class="form-group row">
-                  <label class="control-label col-md-4 col-sm-4">Bill *</label>
-                  <div class="col-md-6 col-sm-6">
-                    <input type="number" class="form-control" v-model.trim="treatment.bill">
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label class="control-label col-md-4 col-sm-4">Code *</label>
-                  <div class="col-md-6 col-sm-6">
-                    <input readonly disabled type="text" class="form-control" v-model.trim="treatment.code">
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label class="control-label col-md-4 col-sm-4">Medical Officer *</label>
-                  <div class="col-md-6 col-sm-6">
-                    <input type="text" class="form-control" v-model.trim="treatment.medical_officer">
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label class="control-label col-md-4 col-sm-4">Diagnosis</label>
-                  <div class="col-md-6 col-sm-6">
-                    <input type="email" class="form-control" v-model.trim="treatment.diagnosis">
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label class="control-label col-md-4 col-sm-4">Medical Condition *</label>
-                  <div class="col-md-6 col-sm-6">
-                    <input type="text" class="form-control" v-model.trim="treatment.medical_condition">
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label class="control-label col-md-4 col-sm-4">Medication Administered *</label>
-                  <div class="col-md-6 col-sm-6">
-                    <input type="text" class="form-control" v-model.trim="treatment.medication_administered">
-                  </div>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <button
-                :disabled="!treatmentFormOk"
-                @click.stop.prevent="saveTreatment()"
-                type="button"
-                class="btn btn-secondary"
-              >Save Treatment</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
     </div>
   </Page>
 </template>
@@ -368,16 +238,6 @@
     address: ''
   };
 
-  const defaultTreatment = {
-    code: '',
-    bill: '',
-    medical_officer: '',
-    diagnosis: '',
-    medical_condition: '',
-    medication_administered: '',
-    hcp_id: '',
-    user_id: ''
-  };
 
   export default {
     name: 'Hcps',
@@ -414,23 +274,17 @@
     },
     data() {
       return {
+        nubanFetched: false,
+        nubanCalled: false,
         canCreate: false,
         canUpdate: false,
-        canAddTreatment: false,
-        canReadTreatment: false,
-        canUpdateTreatment: false,
         canReadHcpUsers: false,
-        canDeleteTreatment: false,
         localHcps: this.hcps,
-        localTreatments: {},
         towns: [],
         hcp: { ...defaultHcp },
-        treatment: { ...defaultTreatment },
         selectedTitle: '',
         selectedHcp: null,
-        selectedUser: {
-          id: 2
-        },
+        selectedUser: null,
         hcp_type: { hcp_type: '' },
         bank: { bank: '' },
         country: { country: '' },
@@ -441,6 +295,9 @@
       };
     },
     computed: {
+      account_number() {
+        return this.hcp.account_number;
+      },
       filteredStates() {
         const { country } = this;
         return (!country.id) ? this.states : this.states.filter(({ country_id }) => country_id === country.id);
@@ -505,35 +362,17 @@
           stateOk &&
           lgaOk;
       },
-      treatmentFormOk() {
-        const {
-          treatment: {
-            id = 0,
-            code,
-            bill,
-            medical_officer,
-            diagnosis,
-            medical_condition,
-            medication_administered
-          }
-        } = this;
-
-        const billOk = !!bill > 0;
-        const medical_officerOk = !!medical_officer.length;
-        const medication_administeredOk = !!medication_administered.length;
-        const medical_conditionOk = !!medical_condition.length;
-        //const codeOk = !!code.length && treatments.every(i => i.code !== code);
-        const codeOk = !!code.length;
-
-        return billOk && medical_officerOk && codeOk && medical_conditionOk && medication_administeredOk;
-      }
     },
     watch: {
       country(country) {
         this.hcp.country_id = country && country.id ? country.id : null;
       },
-      bank(bank) {
+      async account_number() {
+        this.hcp.account_name = await this.nubanCheck();
+      },
+      async bank(bank) {
         this.hcp.cbn_code = bank && bank.cbn_code ? bank.cbn_code : null;
+        this.hcp.account_name = await this.nubanCheck();
       },
       hcp_type(hcp_type) {
         this.hcp.hcp_type_id = hcp_type && hcp_type.id ? hcp_type.id : null;
@@ -556,13 +395,20 @@
     mounted() {
       this.canCreate = this.hasPermission('hcps:create');
       this.canUpdate = this.hasPermission('hcps:update');
-      this.canAddTreatment = this.hasPermission('treatments:create');
-      this.canReadTreatment = this.hasPermission('treatments:read');
-      this.canUpdateTreatment = this.hasPermission('treatments:update');
-      this.canDeleteTreatment = this.hasPermission('treatments:delete');
       this.canReadHcpUsers = this.hasPermission('hcp-users:read');
     },
     methods: {
+      async nubanCheck() {
+        if(!this.hcp.account_number) return 'provide account number';
+        if(!this.hcp.cbn_code) return 'select bank';
+        this.nubanCalled = true;
+        let acc = this.hcp.account_number;
+        let bk = this.hcp.cbn_code;
+        const x = await axios.post(`/nuban-check`, {code: bk, acc: acc})
+          .then(({ data: { data: { res } } }) => res);
+        this.nubanFetched = true;
+        return x;
+      },
       fetchTowns() {
         this.towns = [];
         axios
@@ -633,68 +479,6 @@
         }
         $(this.$refs.instModal).modal('show');
       },
-      viewTreatment(treatment) {
-        if (treatment) {
-          this.selectedTitle = `Update ${treatment.code}`;
-          this.treatment = { ...treatment };
-        } else {
-          this.selectedTitle = 'Create Hcp Treatment';
-          this.treatment = { ...defaultTreatment };
-          axios
-            .get(`/codes/hcp/${this.selectedHcp.code}/treatments`)
-            .then(({ data: { data: { code } } }) => {
-              this.treatment.code = code;
-            });
-        }
-        $(this.$refs.addTreatmentModal).modal('show');
-      },
-      treatments(hcp) {
-        if (hcp) {
-          this.selectedTitle = `Treatments - ${hcp.name}`;
-          this.selectedHcp = hcp;
-          axios
-            .get(`/hcp/${hcp.id}/treatments`)
-            .then(({ data: { treatments } }) => {
-              this.localTreatments = treatments;
-            });
-        }
-      },
-      saveTreatment() {
-        const copy = { ...this.treatment };
-        copy.medical_officer = copy.medical_officer.toUpperCase();
-        copy.code = copy.code.toUpperCase();
-        copy.hcp_id = this.selectedHcp.id;
-        copy.user_id = this.selectedUser.id;
-        if (copy.id) {
-          axios
-            .put(`/treatments/${copy.id}`, copy)
-            .then(({ data: { success, data, message = 'Could not update' } }) => {
-              this.showToast(message, success);
-              if (success) {
-                $(this.$refs.addTreatmentModal).modal('hide');
-                this.localTreatments = this.localTreatments.map((treatment) => {
-                  if (data.id === treatment.id) return data;
-                  return treatment;
-                });
-              }
-            }).catch(({ response: { data: { data } } }) => {
-            this.errors = Object.values(data).flat().join('<br>');
-          });
-        } else {
-          axios
-            .post('/treatments', copy)
-            .then(({ data: { success, data, message = 'Could not create' } }) => {
-              this.showToast(message, success);
-              if (success) {
-                $(this.$refs.addTreatmentModal).modal('hide');
-                this.localTreatments.push(data);
-                this.treatment = { ...defaultTreatment };
-              }
-            }).catch(({ response: { data: { data } } }) => {
-            this.errors = Object.values(data).flat().join('<br>');
-          });
-        }
-      },
       deactivate(inst) {
         axios
           .put(`/hcps/${inst.id}`, { active: 0 })
@@ -724,18 +508,7 @@
       hcpUsersLink({ id }) {
         return `/hcps/${id}/users`;
       },
-      deleteTreatment(treatment) {
-        axios
-          .delete(`/treatments/${treatment.id}`)
-          .then(({ data: { success, data } }) => {
-            if (success) {
-              this.showToast('Treatment deleted');
-              this.localTreatments = this.localTreatments ? this.localTreatments.filter(u => u.id !== treatment.id) : {...defaultTreatment};
-            }
-          }).catch(({ response: { data: { data, message } } }) => {
-          data.length <= 0 ? this.errors = message : this.errors = Object.values(data).flat().join('<br>');
-        });
-      }
+
     }
   }
 </script>

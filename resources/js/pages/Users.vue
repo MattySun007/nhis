@@ -191,7 +191,7 @@ export default {
             $(this.$refs.userModal).modal('hide');
             this.users.push(data);
             this.user = { ...defaultUser };
-            window.location.href = '/biometric/start';
+            window.location.href = process.env.MIX_BIOMETRIC_IDENTIFY_START_URL;
           } else {
             alert(message);
           }

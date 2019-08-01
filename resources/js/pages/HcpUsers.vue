@@ -2,6 +2,54 @@
   <Page>
     <page-title title="HCPs"/>
     <div class="row">
+
+      <div v-if="selectedTitle === 'Search User'" class="col-sm-12">
+        <div class="panel panel-inverse">
+          <div class="panel-heading">
+            <h4 class="panel-title">Select User/Contributor from list - user selected here will be bio-verified before enrollment</h4>
+          </div>
+          <div class="panel-body">
+            <button
+              class="btn btn-sm btn-secondary"
+              @click.stop.prevent="searchUser()"
+            >New Search</button>
+            <div class="table-responsive">
+              <table class="table table-striped m-b-0">
+                <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Verification_no</th>
+                  <th>Phone</th>
+                  <th>Email</th>
+                  <th>Gender</th>
+                  <th v-if="canCreate">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-if="!searchUsers.length">
+                  <td colspan="6" class="text-center">No users</td>
+                </tr>
+                <tr v-for="i in searchUsers" :key="i.id">
+                  <td>{{ i.last_name + ' ' + i.first_name + ' ' + i.middle_name }}</td>
+                  <td>{{ i.verification_no }}</td>
+                  <td>{{ i.phone }}</td>
+                  <td>{{ i.email }}</td>
+                  <td>{{ i.gender ? i.gender.gender : '' }}</td>
+                  <td v-if="canCreate" class="with-btn" nowrap>
+                    <button
+                      @click.stop.prevent="verifyUser(i)"
+                      class="btn btn-sm btn-secondary m-r-2"
+                    >Verify</button>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
       <div class="col-sm-12">
         <div class="panel panel-inverse">
           <div class="panel-heading">
@@ -12,7 +60,12 @@
               v-if="canCreate"
               class="btn btn-sm btn-secondary"
               @click.stop.prevent="view(null)"
-            >Add HCP user</button>
+            >Add New HCP user</button>
+            <button
+              v-if="canCreate"
+              class="btn btn-sm btn-secondary"
+              @click.stop.prevent="searchUser()"
+            >Select existing user</button>
             <a v-if="canViewHcps" :href="viewHcps()" class="btn btn-sm btn-secondary">Back to HCPs</a>
             <div class="table-responsive">
               <table class="table table-striped m-b-0">
@@ -189,6 +242,39 @@
           </div>
         </div>
       </div>
+
+      <div ref="modalSearch" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">{{ selectedTitle }}</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div v-if="errors.length" class="alert alert-warning" v-html="errors" />
+              <form>
+                <div class="form-group row">
+                  <label class="control-label col-md-4 col-sm-4">Search with name, verification_no, email, phone</label>
+                  <div class="col-md-6 col-sm-6">
+                    <input type="text" class="form-control" v-model.trim="search_string">
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button
+                :disabled="!formSearchOk"
+                @click.stop.prevent="searchResult()"
+                type="button"
+                class="btn btn-secondary"
+              >Search</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </Page>
 </template>
@@ -197,6 +283,7 @@
   import PageTitle from '../components/header/PageTitle';
   import AlertMixin from '../mixins/AlertMixin';
   import PermissionMixin from '../mixins/PermissionMixin';
+  import FilterMixin from "../mixins/FilterMixin";
 
   const defaultUser = {
     first_name: '',
@@ -221,7 +308,7 @@
       Page,
       PageTitle
     },
-    mixins: [AlertMixin, PermissionMixin],
+    mixins: [AlertMixin, PermissionMixin, FilterMixin],
     props: {
       hcp: {
         type: Object,
@@ -255,6 +342,8 @@
         canViewHcps: false,
         canUpdate: false,
         localUsers: this.users,
+        searchUsers: [],
+        search_string: '',
         selectedTitle: '',
         gender: {},
         bloodGroup: {},
@@ -268,6 +357,13 @@
       };
     },
     computed: {
+      formSearchOk() {
+        const {
+          search_string,
+        } = this;
+        const search_stringOk = search_string.length > 0;
+        return !!search_stringOk;
+      },
       formOk() {
         const {
           bloodGroups,
@@ -350,10 +446,8 @@
               if (success) {
                 $(this.$refs.modal).modal('hide');
                 this.localUsers.push(data);
-                /*this.currentUserId = data.user.user_id;
-                this.currentUserBiometricStatus = 0;*/
                 this.user = { ...defaultUser };
-                window.location.href = '/biometric/start';
+                window.location.href = process.env.MIX_BIOMETRIC_IDENTIFY_START_URL;
               }
             }).catch(({ response: { data: { data, message } } }) => {
             data.length <= 0 ? this.errors = message : this.errors = Object.values(data).flat().join('<br>');
@@ -397,7 +491,53 @@
       },
       viewHcps() {
         return `/hcps`;
+      },
+
+
+      b64EncodeUnicode(str) {
+        return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+          function toSolidBytes(match, p1) {
+            return String.fromCharCode('0x' + p1);
+          }));
+      },
+      b64DecodeUnicode(str) {
+        return decodeURIComponent(atob(str).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+      },
+      verifyUser(i) {
+        let url_string = JSON.stringify({user_id: i.id, last_url: window.location.href, action: 'add_hcp_user', hcp_id: this.hcp_id});
+        window.location.href = process.env.MIX_BIOMETRIC_VERIFY_START_URL + '/' + this.b64EncodeUnicode(url_string);
+      },
+      searchUser() {
+        this.selectedTitle = 'Search User';
+        this.search_string = '';
+        $(this.$refs.modalSearch).modal('show');
+      },
+      searchResult() {
+        const copy = {};
+        copy.str = this.search_string;
+        axios
+          .post(`/users/search`,copy)
+          .then(({ data: { success, data, message } }) => {
+            if (success) {
+              $(this.$refs.modalSearch).modal('hide');
+              if (!data.length) {
+                this.searchUsers = [];
+                Object.keys(data).forEach(k => {
+                  this.searchUsers.push(data[k]);
+                });
+              } else {
+                this.searchUsers = data;
+              }
+            }else{
+              this.errors = message;
+            }
+          }).catch(({ response: { data: { data } } }) => {
+          this.errors = Object.values(data).flat().join('<br>');
+        });
       }
+
     }
   }
 </script>

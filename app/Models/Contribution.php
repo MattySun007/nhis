@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Contribution extends Model
 {
   use InsertOnDuplicateKey;
-  protected $fillable = ['batch_code', 'user_id', 'amount', 'month', 'year', 'approved', 'approved_by', 'approved_at', 'created_at', 'updated_at', 'processed', 'processed_by', 'processed_at'];
+  protected $fillable = ['batch_code', 'user_id', 'amount', 'month', 'year', 'approved', 'approved_by', 'approved_at', 'created_at', 'updated_at', 'processed', 'processed_by', 'processed_at','paid', 'paid_by', 'paid_at'];
 
   public function user()
   {

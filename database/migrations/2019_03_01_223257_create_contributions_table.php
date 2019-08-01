@@ -26,6 +26,9 @@ class CreateContributionsTable extends Migration
       $table->boolean('approved')->default('0');
       $table->bigInteger('approved_by')->unsigned()->nullable();
       $table->dateTime('approved_at')->nullable();
+      $table->boolean('paid')->default('0');
+      $table->bigInteger('paid_by')->unsigned()->nullable();
+      $table->dateTime('paid_at')->nullable();
       $table->timestamps();
 
       $table->unique(['user_id', 'month', 'year'], 'DUPLICATE_RECORD');

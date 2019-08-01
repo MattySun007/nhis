@@ -316,9 +316,9 @@
       },
       selectUser(i) {
         this.user_text = 'User: [ '+ i.last_name + ' ' + i.first_name + ' ] selected';
-        this.selectedUserId = i.user_id;
-        axios
-          .post(`/user-permissions-list`, {user_id: this.selectedUserId})
+        this.selectedUserId = i.id;
+        let params = Object.assign({}, {user_id: this.selectedUserId});
+        axios.post(`/user-permissions-list`, params)
           .then(({ data: { user_permissions } }) => {
             this.userPerms = user_permissions;
           });

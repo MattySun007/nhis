@@ -61,6 +61,35 @@ class InstitutionController extends Controller
     $inst = new Institution($data);
     $inst->save();
     $inst->loadMissing(['town', 'country', 'state', 'lga']);
+    /**
+     * send email
+     */
+    $params = array(
+      'subject' => 'New '.env("APP_NAME").' Institution created',
+      'message_body' => "<table border='1' cellpadding=\"2\" cellspacing=\"2\"><thead> </thead><tbody>
+                   <tr><th colspan='2'>Your institution/company has just been successfully created, Please find below the details</th></tr> 
+                   <tr><th>Name: </th><td>". $inst->name."</td></tr> 
+                   <tr><th>Code: </th><td>". $inst->code."</td></tr>
+                   <tr><th>Phone: </th><td>". $inst->phone."</td></tr>
+                   <tr><th>Email: </th><td>". $inst->email."</td></tr>
+                   <tr><th>RCC Number: </th><td>". $inst->rcc_number."</td></tr>
+                   <tr><th>Country: </th><td>". $inst->country->country."</td></tr>
+                   <tr><th>State: </th><td>". $inst->state->name."</td></tr>
+                   <tr><th>LGA: </th><td>". $inst->lga->name."</td></tr>
+                   <tr><th>Town: </th><td>". $inst->town->name."</td></tr>
+                   <tr><th>Date: </th><td>". $inst->created_at."</td></tr></tbody></table>",
+      'message_header' => 'Institution Creation',
+      'button_link' => '',
+      'button_link_text' => '',
+      'to' => $inst->email,
+      'cc' => array(
+        ['email' => env("SUPPORT_EMAIL"), 'name' => env("SUPPORT_NAME").' Support']
+      ),
+      'bcc' => array(
+        ['email' => env("SUPPORT_BCC"), 'name' => 'Support Bcc']
+      ),
+    );
+    Utility::send_email($params);
     return response()->json([
       'success' => true,
       'message' => 'Institution created',

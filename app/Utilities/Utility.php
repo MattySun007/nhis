@@ -13,6 +13,52 @@ use Mail;
 class Utility 
 {
 
+  public static function nubanCheck(Request $request)
+  {
+    $data = $request->all();
+    $data_for_nuban_check_post = array(
+      'vendor_code' => '555600987',
+      'account_number' => $data['acc'],
+      'bank_code' => $data['code'],
+    );
+    $request_headers = array();
+    $request_headers[] = 'apikey: x0jPnHLb2A9E6nNIGkzl'; // tytrtyr565hgh78lkljmnjg
+    $request_headers[] = 'Content-Type: application/json';
+    $request_headers[] = 'Accept: application/json';
+    $request_headers[] = 'User-Agent: Apache-HttpClient/4.1.1 ';
+    $request_headers[] = 'Connection: Keep-Alive';
+
+    $result = self::make_post_request($data_for_nuban_check_post,'https://api.appmartgroup.com/v2/accounts/nubanCheckPost', $request_headers);
+    $res = "Error: request not successful!";
+    if($result) {
+      $result = json_decode(($result));
+      if(isset($result->Message)){
+        $res = $result->Message;
+      }elseif(isset($result->status) && $result->status == '00'){
+        $res = $result->accountName;
+      }
+    }
+    return response()->json([
+      'success' => true,
+      'message' => 'Nuban checked',
+      'data' => array('res' => $res)
+    ]);
+  }
+
+  public static function generateVerificationCode($model)
+  {
+    // pass model like so, TreatmentUser::class
+    $seed = "TREAT_";
+    a:
+    $code = Utility::generateRandomNumber(10);
+    $code = $seed.$code;
+    if($model::where('verification_code', $code)->count() <= 0){
+      return $code;
+    }else{
+      goto a;
+    }
+  }
+
   public static function send_email($params) {
     $data = array(
       'project_name' => ($params['project_name']) ?? env("APP_NAME"),
@@ -21,7 +67,7 @@ class Utility
       'message_header' => ($params['message_header']) ?? 'Welcome',
       'button_link' => ($params['button_link']) ?? '',
       'button_link_text' => ($params['button_link_text']) ?? '',
-      'lower_text' => ($params['lower_text']) ?? '',
+      'lower_text' => ($params['lower_text']) ?? 'For any complaints, kindly reach us using the information below',
       'support_email' => ($params['support_email']) ?? env("SUPPORT_EMAIL"),
       'support_phone' => ($params['support_phone']) ?? env("SUPPORT_PHONE"),
       'website_link' => ($params['website_link']) ?? env("APP_URL"),
@@ -32,7 +78,7 @@ class Utility
     Mail::send('mail.mail_verify', $data, function ($message) use ($params) {
       $message->from($params['from_email'] ?? env("MAIL_FROM_ADDRESS"), $params['from_name'] ?? env("MAIL_FROM_NAME"));
       $message->to($params['to']);
-      $message->subject($params['from_email']);
+      $message->subject($params['subject']);
       if(!empty($params['cc'])){
         foreach($params['cc'] as $cc){
           $message->cc($cc['email'], $cc['name']);
@@ -40,7 +86,7 @@ class Utility
       }
       if(!empty($params['bcc'])){
         foreach($params['bcc'] as $bcc){
-          $message->cc($bcc['email'], $bcc['name']);
+          $message->bcc($bcc['email'], $bcc['name']);
         }
       }
       if(!empty($params['attachment'])){
@@ -90,8 +136,9 @@ class Utility
   }
 
   public static function getStoredImage($name, $env_path){
+    //dd(auth()->user()->user_status);
     $obj_url = asset(env($env_path).$name);
-    $obj_path = public_path((env($env_path).$name));
+    $obj_path = public_path((env($env_path).$name)); // storage path has been linked to public path using: php artisan storage:link
     $img = File::exists($obj_path.'.jpg') ? $obj_url.'.jpg' : (File::exists($obj_path.'.png') ? $obj_url.'.png' : asset(env($env_path).'null.png'));
     return $img;
   }
@@ -126,7 +173,7 @@ class Utility
       return $response;
     } catch(Exception $e) {
       Log::info("{$params['method']} {$params['url']} request error: {$e->getTraceAsString()}");
-      return 'ERROR';
+      return false;
     }
   }
 

@@ -11,27 +11,30 @@
             <div v-if="errors.length" class="alert alert-warning" v-html="errors"></div>
             <form>
               <div class="form-group row">
-                <label class="control-label col-md-3 col-sm-4">Year *</label>
-                <div class="col-md-9 col-sm-9">
+                <label class="control-label col-md-4 col-sm-4">Year *</label>
+                <div class="col-md-8 col-sm-8">
                   <v-select placeholder="Select year" label="name" :options="years" index="value" v-model="year"/>
                 </div>
               </div>
               <div class="form-group row">
-                <label class="control-label col-md-3 col-sm-3">Month *</label>
-                <div class="col-md-9 col-sm-9">
+                <label class="control-label col-md-4 col-sm-4">Month *</label>
+                <div class="col-md-8 col-sm-8">
                   <v-select placeholder="Select month" label="name" :options="months" index="value" v-model="month"/>
                 </div>
               </div>
               <div class="form-group row">
-                <label class="control-label col-md-3 col-sm-3"></label>
-                <div class="col-md-3 col-sm-3" >
-                  <button :disabled="!formOk || !canRead" @click.stop.prevent="viewContributionHistory()" type="button" class="btn btn-secondary">Contribution History</button>
+                <label class="control-label col-md-4 col-sm-4"></label>
+                <div class="col-md-2 col-sm-2" >
+                  <button :disabled="!formOk" @click.stop.prevent="viewContributionHistory()" type="button" class="btn btn-secondary">History</button>
                 </div>
-                <div class="col-md-3 col-sm-3">
-                  <button :disabled="!formOk || !canProcess" @click.stop.prevent="processContribution()" type="button" class="btn btn-secondary">Process Contribution</button>
+                <div class="col-md-2 col-sm-2">
+                  <button :disabled="!formOk" @click.stop.prevent="processContribution()" type="button" class="btn btn-secondary">Process</button>
                 </div>
-                <div class="col-md-3 col-sm-3" >
-                  <button :disabled="!formOk || !canApprove" @click.stop.prevent="approveContribution()" type="button" class="btn btn-secondary">Approve Contribution</button>
+                <div class="col-md-2 col-sm-2" >
+                  <button :disabled="!formOk" @click.stop.prevent="approveContribution()" type="button" class="btn btn-secondary">Approve</button>
+                </div>
+                <div class="col-md-2 col-sm-2" >
+                  <button :disabled="!formOk" @click.stop.prevent="payContribution()" type="button" class="btn btn-primary">Pay</button>
                 </div>
               </div>
             </form>
@@ -75,10 +78,13 @@
                   </tr>
                   </thead>
                   <tbody>
-                  <tr v-if="!localHistory.length">
+                  <tr v-if="!canRead">
+                    <td colspan="8" class="text-center">You do not have permission to view this record(s)</td>
+                  </tr>
+                  <tr v-else-if="!localHistory.length">
                     <td colspan="8" class="text-center">No record</td>
                   </tr>
-                  <tr v-for="i in localHistory" :key="i.id">
+                  <tr v-else v-for="i in localHistory" :key="i.id">
                     <td>{{ i.user.last_name + ' ' + i.user.first_name + ' ' + i.user.middle_name }}</td>
                     <td>{{ i.user.verification_no }}</td>
                     <td>{{ i.user.phone }}</td>
@@ -172,14 +178,17 @@
                     <th>Verification_no</th>
                     <th>Phone</th>
                     <th>Amount</th>
-                    <th>Actions</th>
+                    <th><input type="checkbox" v-model="selectProcessUsersAll" ></th>
                   </tr>
                   </thead>
                   <tbody>
-                  <tr v-if="!localProcess.length">
+                  <tr v-if="!canProcess">
+                    <td colspan="8" class="text-center">You do not have permission to process this record(s)</td>
+                  </tr>
+                  <tr v-else-if="!localProcess.length">
                     <td colspan="5" class="text-center">No record, contributions might have been processed for this date!</td>
                   </tr>
-                  <tr v-for="i in localProcess" :key="i.id">
+                  <tr v-else v-for="i in localProcess" :key="i.id">
                     <td>{{ i.last_name + ' ' + i.first_name + ' ' + i.middle_name }}</td>
                     <td>{{ i.verification_no }}</td>
                     <td>{{ i.phone }}</td>
@@ -225,10 +234,13 @@
                   </tr>
                   </thead>
                   <tbody>
-                  <tr v-if="!usersProcessed.length">
+                  <tr v-if="!canProcess">
+                    <td colspan="8" class="text-center">You do not have permission to process and no records processed!</td>
+                  </tr>
+                  <tr v-else-if="!usersProcessed.length">
                     <td colspan="8" class="text-center">No record</td>
                   </tr>
-                  <tr v-for="i in usersProcessed" :key="i.id">
+                  <tr v-else v-for="i in usersProcessed" :key="i.id">
                     <td v-if="i.processed === 1"><span><i class="fa fa-check text-success"></i>&nbsp;</span></td>
                     <td v-else><span><i class="fa fa-remove text-danger"></i>&nbsp;</span></td>
                     <td>{{ i.user.last_name + ' ' + i.user.first_name + ' ' + i.user.middle_name }}</td>
@@ -263,7 +275,7 @@
                     <th>Verification_no</th>
                     <th>Phone</th>
                     <th>Amount</th>
-                    <th>Actions</th>
+                    <th><input type="checkbox" v-model="selectProcessAdopteesAll" ></th>
                   </tr>
                   </thead>
                   <tbody>
@@ -283,7 +295,6 @@
                     <td colspan="5" class="with-btn" nowrap>
                       <button
                         :disabled="!formAdopteeProcessOk"
-                        v-if="canManage || canProcess"
                         @click="doProcess('adoptees')"
                         class="btn btn-sm btn-secondary m-r-2"
                       >Process</button>
@@ -367,14 +378,17 @@
                     <th>Verification_no</th>
                     <th>Phone</th>
                     <th>Amount</th>
-                    <th>Actions</th>
+                    <th><input type="checkbox" v-model="selectApproveUsersAll" ></th>
                   </tr>
                   </thead>
                   <tbody>
-                  <tr v-if="!localApprove.length">
+                  <tr v-if="!canApprove">
+                    <td colspan="8" class="text-center">You do not have permission to approve this records!</td>
+                  </tr>
+                  <tr v-else-if="!localApprove.length">
                     <td colspan="5" class="text-center">No record, contributions might have been Approve for this date!</td>
                   </tr>
-                  <tr v-for="i in localApprove" :key="i.id">
+                  <tr v-else v-for="i in localApprove" :key="i.id">
                     <td>{{ i.last_name + ' ' + i.first_name + ' ' + i.middle_name }}</td>
                     <td>{{ i.verification_no }}</td>
                     <td>{{ i.phone }}</td>
@@ -421,10 +435,13 @@
                   </tr>
                   </thead>
                   <tbody>
-                  <tr v-if="!usersApproved.length">
+                  <tr v-if="!canApprove">
+                    <td colspan="8" class="text-center">You do not have permission to approve and no records approved!</td>
+                  </tr>
+                  <tr v-else-if="!usersApproved.length">
                     <td colspan="9" class="text-center">No record</td>
                   </tr>
-                  <tr v-for="i in usersApproved" :key="i.id">
+                  <tr v-else v-for="i in usersApproved" :key="i.id">
                     <td v-if="i.approved === 1"><span><i class="fa fa-check text-success"></i>&nbsp;</span></td>
                     <td v-else><span><i class="fa fa-remove text-danger"></i>&nbsp;</span></td>
                     <td>{{ i.user.last_name + ' ' + i.user.first_name + ' ' + i.user.middle_name }}</td>
@@ -460,7 +477,7 @@
                     <th>Verification_no</th>
                     <th>Phone</th>
                     <th>Amount</th>
-                    <th>Actions</th>
+                    <th><input type="checkbox" v-model="selectApproveAdopteesAll" ></th>
                   </tr>
                   </thead>
                   <tbody>
@@ -480,7 +497,6 @@
                     <td colspan="5" class="with-btn" nowrap>
                       <button
                         :disabled="!formAdopteeApproveOk"
-                        v-if="canManage || canApprove"
                         @click="doApprove('adoptees')"
                         class="btn btn-sm btn-secondary m-r-2"
                       >Approve</button>
@@ -538,6 +554,118 @@
       </div>
     </div>
 
+    <div v-else-if="action === 'pay'">
+
+      <div class="row">
+        <div class="col-sm-12">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <button @click.stop.prevent="backToDate()" type="button" class="btn btn-secondary m-r-2">Back to date</button>&nbsp;
+              <button @click.stop.prevent="viewContributionHistory()" type="button" class="btn btn-secondary m-r-2">History</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- begin process users and display processed -->
+      <div class="row">
+        <div class="col-sm-6">
+          <div class="panel panel-inverse">
+            <div class="panel-heading">
+              <h4 class="panel-title">Pay User Contributions - {{ action_text }}</h4>
+            </div>
+            <div class="panel-body">
+              <div class="table-responsive">
+                <table class="table table-striped m-b-0">
+                  <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Verification_no</th>
+                    <th>Phone</th>
+                    <th>Amount</th>
+                    <th><input type="checkbox" v-model="selectPayUsersAll" ></th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr v-if="!canPay">
+                    <td colspan="8" class="text-center">You do not have permission to pay these records!</td>
+                  </tr>
+                  <tr v-else-if="!localPay.length">
+                    <td colspan="5" class="text-center">No record, contributions might have been paid for this date!</td>
+                  </tr>
+                  <tr v-else v-for="i in localPay" :key="i.id">
+                    <td>{{ i.last_name + ' ' + i.first_name + ' ' + i.middle_name }}</td>
+                    <td>{{ i.verification_no }}</td>
+                    <td>{{ i.phone }}</td>
+                    <td>{{ i.contribution_amount }}</td>
+                    <td class="with-btn" nowrap>
+                      <input type="checkbox" class="form-control" v-model="selectedUsersPay" :value="i"  >
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="5" class="with-btn" nowrap>
+                      <button
+                        :disabled="!formUserPayOk"
+                        v-if="canManage || canPay"
+                        @click="doPay('users')"
+                        class="btn btn-sm btn-secondary m-r-2"
+                      >Pay</button>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="panel panel-inverse">
+            <div class="panel-heading">
+              <h4 class="panel-title">Pay Adoptee Contributions - {{ action_text }}</h4>
+            </div>
+            <div class="panel-body">
+              <div class="table-responsive">
+                <table class="table table-striped m-b-0">
+                  <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Verification_no</th>
+                    <th>Phone</th>
+                    <th>Amount</th>
+                    <th><input type="checkbox" v-model="selectPayAdopteesAll" ></th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr v-if="!localAdopteesPay.length">
+                    <td colspan="5" class="text-center">No record, contributions might have been Paid for this date!</td>
+                  </tr>
+                  <tr v-for="i in localAdopteesPay" :key="i.id">
+                    <td>{{ i.last_name + ' ' + i.first_name + ' ' + i.middle_name }}</td>
+                    <td>{{ i.verification_no }}</td>
+                    <td>{{ i.phone }}</td>
+                    <td>{{ i.contribution_amount }}</td>
+                    <td class="with-btn" nowrap>
+                      <input type="checkbox" class="form-control" v-model="selectedAdopteesPay" :value="i" >
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colspan="5" class="with-btn" nowrap>
+                      <button
+                        :disabled="!formAdopteePayOk"
+                        @click="doPay('adoptees')"
+                        class="btn btn-sm btn-secondary m-r-2"
+                      >Pay</button>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
     <div ref="modal" class="modal" tabindex="-1" role="dialog">
       <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -578,6 +706,7 @@
                     <button v-if="action === 'history'" @click.stop.prevent="viewInstitutionContributionHistory(i)" class="btn btn-sm btn-secondary m-r-2">Select Institution</button>
                     <button v-else-if="action === 'process'" @click.stop.prevent="processInstitutionContribution(i)" class="btn btn-sm btn-secondary m-r-2">Select Institution</button>
                     <button v-else-if="action === 'approve'" @click.stop.prevent="approveInstitutionContribution(i)" class="btn btn-sm btn-secondary m-r-2">Select Institution</button>
+                    <button v-else-if="action === 'pay'" @click.stop.prevent="payInstitutionContribution(i)" class="btn btn-sm btn-secondary m-r-2">Select Institution</button>
                   </td>
                 </tr>
                 </tbody>
@@ -658,6 +787,11 @@
         localApprove: [],
         localAdopteesApprove: [],
 
+        selectedUsersPay: [],
+        selectedAdopteesPay: [],
+        localPay: [],
+        localAdopteesPay: [],
+
         errors: '',
         year: 0,
         month: 0,
@@ -669,6 +803,90 @@
       };
     },
     computed: {
+      selectProcessUsersAll: {
+        get: function () {
+          return this.localProcess ? this.selectedUsers.length === this.localProcess.length : false;
+        },
+        set: function (value) {
+          let selected = [];
+          if (value) {
+            this.localProcess.forEach(function (user) {
+              selected.push(user);
+            });
+          }
+          this.selectedUsers = selected;
+        }
+      },
+      selectProcessAdopteesAll: {
+        get: function () {
+          return this.localAdopteesProcess ? this.selectedAdoptees.length === this.localAdopteesProcess.length : false;
+        },
+        set: function (value) {
+          let selected = [];
+          if (value) {
+            this.localAdopteesProcess.forEach(function (user) {
+              selected.push(user);
+            });
+          }
+          this.selectedAdoptees = selected;
+        }
+      },
+      selectApproveUsersAll: {
+        get: function () {
+          return this.localApprove ? this.selectedUsersApprove.length === this.localApprove.length : false;
+        },
+        set: function (value) {
+          let selected = [];
+          if (value) {
+            this.localApprove.forEach(function (user) {
+              selected.push(user);
+            });
+          }
+          this.selectedUsersApprove = selected;
+        }
+      },
+      selectApproveAdopteesAll: {
+        get: function () {
+          return this.localAdopteesApprove ? this.selectedAdopteesApprove.length === this.localAdopteesApprove.length : false;
+        },
+        set: function (value) {
+          let selected = [];
+          if (value) {
+            this.localAdopteesApprove.forEach(function (user) {
+              selected.push(user);
+            });
+          }
+          this.selectedAdopteesApprove = selected;
+        }
+      },
+      selectPayUsersAll: {
+        get: function () {
+          return this.localPay ? this.selectedUsersPay.length === this.localPay.length : false;
+        },
+        set: function (value) {
+          let selected = [];
+          if (value) {
+            this.localPay.forEach(function (user) {
+              selected.push(user);
+            });
+          }
+          this.selectedUsersPay = selected;
+        }
+      },
+      selectPayAdopteesAll: {
+        get: function () {
+          return this.localAdopteesPay ? this.selectedAdopteesPay.length === this.localAdopteesPay.length : false;
+        },
+        set: function (value) {
+          let selected = [];
+          if (value) {
+            this.localAdopteesPay.forEach(function (user) {
+              selected.push(user);
+            });
+          }
+          this.selectedAdopteesPay = selected;
+        }
+      },
       formOk: {
         get: function(){
           const {
@@ -731,6 +949,30 @@
           return val;
         }
       },
+      formUserPayOk: {
+        get: function(){
+          const {
+            selectedUsersPay
+          } = this;
+          const selectedUsersPayOk =  Object.values(selectedUsersPay).length >= 1;
+          return !!selectedUsersPayOk;
+        },
+        set: function(val){
+          return val;
+        }
+      },
+      formAdopteePayOk: {
+        get: function(){
+          const {
+            selectedAdopteesPay
+          } = this;
+          const selectedAdopteesPayOk =  Object.values(selectedAdopteesPay).length >= 1;
+          return !!selectedAdopteesPayOk;
+        },
+        set: function(val){
+          return val;
+        }
+      },
     },
     watch: {
       year: {
@@ -763,6 +1005,16 @@
         handler() {
           this.formAdopteeApproveOk = Object.values(this.selectedAdopteesApprove).length >= 1;
         }
+      },
+      selectedUsersPay: {
+        handler() {
+          this.formUserPayOk = Object.values(this.selectedUsersPay).length >= 1;
+        }
+      },
+      selectedAdopteesPay: {
+        handler() {
+          this.formAdopteePayOk = Object.values(this.selectedAdopteesPay).length >= 1;
+        }
       }
     },
     mounted() {
@@ -770,8 +1022,43 @@
       this.canProcess = this.hasPermission('contributions:process');
       this.canApprove = this.hasPermission('contributions:approve');
       this.canManage = this.hasPermission('contributions:manage');
+      this.canPay = this.hasPermission('contributions:pay');
     },
     methods: {
+     payContribution() {
+        this.action = 'pay';
+        if(this.item_title === 'institution'){
+          this.action_text = 'Select institution to pay for : [ '+ this.monthText + ', ' + this.year + ' ]';
+          this.showToast(this.action_text, true);
+          $(this.$refs.modal).modal('show');
+        }else if(this.item_title === 'individual'){
+          this.action_text = 'Pay your contribution for: [ '+ this.monthText + ', ' + this.year + ' ]';
+          this.showToast(this.action_text, true);
+          this.pay(0);
+        }
+      },
+      payInstitutionContribution(inst) {
+        this.action = 'pay';
+        this.pay(inst);
+      },
+      pay(inst) {
+        this.action = 'pay';
+        let id = inst === 0 ? 0 : inst.id;
+        let name = inst === 0 ? '' : inst.name;
+        axios.post(`/contributions/pay`, {month: this.month, year: this.year, institution_id: id})
+          .then(({ data: { success, message, data } }) => {
+            if(success){
+              $(this.$refs.modal).modal('hide');
+              this.localPay = data.result;
+              this.localAdopteesPay = data.adoptees;
+              this.action_text = 'pay contribution for '+ name +': [ '+ this.monthText + ', ' + this.year + ' ]';
+              this.showToast(this.action_text, true);
+            }else{
+              this.action_text = 'No records found! Contribution might have been pay for '+ name +': [ '+ this.monthText + ', ' + this.year + ' ]';
+              this.showToast(this.action_text, true);
+            }
+          });
+      },
       approveContribution() {
         this.action = 'approve';
         if(this.item_title === 'institution'){
@@ -779,7 +1066,8 @@
           this.showToast(this.action_text, true);
           $(this.$refs.modal).modal('show');
         }else if(this.item_title === 'individual'){
-          this.showToast('You cannot approve contribution for an institution!', true);
+          this.action_text = 'Approve your contribution for : [ '+ this.monthText + ', ' + this.year + ' ]';
+          this.approve(0);
         }
       },
       approveInstitutionContribution(inst) {
@@ -790,16 +1078,58 @@
         this.action = 'approve';
         let id = inst === 0 ? 0 : inst.id;
         let name = inst === 0 ? '' : inst.name;
-        this.action_text = 'Approve contribution for '+ name +': [ '+ this.monthText + ', ' + this.year + ' ]';
         axios.post(`/contributions/approve`, {month: this.month, year: this.year, institution_id: id})
           .then(({ data: { success, message, data } }) => {
             if(success){
               $(this.$refs.modal).modal('hide');
               this.localApprove = data.result;
               this.localAdopteesApprove = data.adoptees;
+              this.action_text = 'Approve contribution for '+ name +': [ '+ this.monthText + ', ' + this.year + ' ]';
+              this.showToast(this.action_text, true);
+            }else{
+              this.action_text = 'No records found! Contribution might have been approved for '+ name +': [ '+ this.monthText + ', ' + this.year + ' ]';
+              this.showToast(this.action_text, true);
             }
           });
-        this.showToast(this.action_text, true);
+      },
+      doPay(type) {
+        if(type === 'users'){
+          const copy = [ ...this.selectedUsersPay ];
+          let count = 0;
+          let errors = [];
+          let users = [];
+          copy.map(user => { users.push(user.id); count++;});
+          axios.post(`/contributions/pay/do`, {month: this.month, year: this.year, users: users})
+            .then(({ data: { success, data, message } }) => {
+              if (success) {
+
+              }else{
+                errors.push(message);
+              }
+            }).catch(({ response: { data: { message } } }) => {
+            errors.push(message);
+          });
+
+        }else if(type === 'adoptees') {
+          const copy = [...this.selectedAdopteesPay];
+          let count = 0;
+          let errors = [];
+          let adoptees = [];
+          copy.map(adoptee => {
+            adoptees.push(adoptee.id);
+            count++;
+          });
+          axios.post(`/contributions/pay/do`, {month: this.month, year: this.year, users: users})
+            .then(({data: {success, data, message}}) => {
+              if (success) {
+
+              } else {
+                errors.push(message);
+              }
+            }).catch(({response: {data: {message}}}) => {
+            errors.push(message);
+          });
+        }
       },
       doApprove(type) {
         if(type === 'users'){
@@ -822,7 +1152,6 @@
           Promise.all(requests).then(() => {
             this.selectedUsersApprove = [];
             this.errors = errors.join();
-            console.log('error',this.errors);
             if(count > 0){
               this.localApprove = this.localApprove.filter((user) => !users.includes(user.id));
               if(this.item_title === 'individual'){
@@ -855,7 +1184,6 @@
           Promise.all(requests).then(() => {
             this.selectedAdopteesApprove = [];
             this.errors = errors.join();
-            console.log('error',this.errors);
             if(count > 0){
               this.localAdopteesApprove = this.localAdopteesApprove.filter((adoptee) => !users.includes(adoptee.id));
               if(this.item_title === 'individual'){
@@ -891,13 +1219,12 @@
           Promise.all(requests).then(() => {
             this.selectedUsers = [];
             this.errors = errors.join();
-            console.log('error',this.errors);
             if(count > 0){
               this.localProcess = this.localProcess.filter((user) => !users.includes(user.id));
               if(this.item_title === 'individual'){
-                this.fetch({'month': this.month, 'year': this.year, 'users': users, 'batch_code': '', 'user_type': 'users', 'mode': 'approve'});
+                this.fetch({'month': this.month, 'year': this.year, 'users': users, 'user_type': 'users', 'mode': 'process'});
               }else if(this.item_title === 'institution'){
-                this.fetch({'month': this.month, 'year': this.year, 'users': users, 'batch_code': '', 'user_type': 'users', 'mode': 'process'});
+                this.fetch({'month': this.month, 'year': this.year, 'users': users, 'user_type': 'users', 'mode': 'process'});
               }
               this.showToast(count +' user contributions processed for [ '+ this.monthText + ', ' + this.year + ' ]', true);
             }else{
@@ -924,13 +1251,12 @@
           Promise.all(requests).then(() => {
             this.selectedAdoptees = [];
             this.errors = errors.join();
-            console.log('error',this.errors);
             if(count > 0){
               this.localAdopteesProcess = this.localAdopteesProcess.filter((adoptee) => !users.includes(adoptee.id));
               if(this.item_title === 'individual'){
-                this.fetch({'month': this.month, 'year': this.year, 'users': users, 'batch_code': '', 'user_type': 'adoptees', 'mode': 'approve'});
+                this.fetch({'month': this.month, 'year': this.year, 'users': users, 'user_type': 'adoptees', 'mode': 'process'});
               }else if(this.item_title === 'institution'){
-                this.fetch({'month': this.month, 'year': this.year, 'users': users, 'batch_code': '', 'user_type': 'adoptees', 'mode': 'process'});
+                this.fetch({'month': this.month, 'year': this.year, 'users': users, 'user_type': 'adoptees', 'mode': 'process'});
               }
               this.showToast(count +' adoptee contributions processed for [ '+ this.monthText + ', ' + this.year + ' ]', true);
             }else{
@@ -958,10 +1284,10 @@
       viewContributionHistory() {
         this.action = 'history';
         if(this.item_title === 'institution'){
-          this.action_text = 'approved contribution for : [ '+ this.monthText + ', ' + this.year + ' ]';
+          this.action_text = 'view approved contributions for : [ '+ this.monthText + ', ' + this.year + ' ]';
           $(this.$refs.modal).modal('show');
         }else if(this.item_title === 'individual'){
-          this.action_text = 'Your approved contribution for : [ '+ this.monthText + ', ' + this.year + ' ]';
+          this.action_text = 'view your approved contribution for : [ '+ this.monthText + ', ' + this.year + ' ]';
           this.history(0);
         }
       },
@@ -1005,16 +1331,19 @@
         this.action = 'history';
         let id = inst === 0 ? 0 : inst.id;
         let name = inst === 0 ? '' : inst.name;
-        this.action_text = 'approved contribution for '+ name +': [ '+ this.monthText + ', ' + this.year + ' ]';
         axios.post(`/contributions/history`, {month: this.month, year: this.year, institution_id: id})
           .then(({ data: { success, message, data } }) => {
             if(success){
               $(this.$refs.modal).modal('hide');
               this.localHistory = data.result;
               this.localAdoptees = data.adoptees;
+              this.action_text = 'approved contribution for '+ name +': [ '+ this.monthText + ', ' + this.year + ' ]';
+              this.showToast(this.action_text, true);
+            }else{
+              this.action_text = 'no approved contribution for '+ name +': [ '+ this.monthText + ', ' + this.year + ' ]';
+              this.showToast(this.action_text, true);
             }
           });
-        this.showToast(this.action_text, true);
       },
       backToDate(){
         this.action_text = 'Select year and month';
@@ -1039,17 +1368,19 @@
         this.action = 'process';
         let id = inst === 0 ? 0 : inst.id;
         let name = inst === 0 ? '' : inst.name;
-        this.action_text = 'Process contribution for '+ name +': [ '+ this.monthText + ', ' + this.year + ' ]';
         axios.post(`/contributions/process`, {month: this.month, year: this.year, institution_id: id})
           .then(({ data: { success, message, data } }) => {
             if(success){
-              console.log(data.adoptees);
+              this.action_text = 'Process contribution for '+ name +': [ '+ this.monthText + ', ' + this.year + ' ]';
+              this.showToast(this.action_text, true);
               $(this.$refs.modal).modal('hide');
               this.localProcess = data.result;
               this.localAdopteesProcess = data.adoptees;
+            }else{
+              this.action_text = 'No records found! Contribution might have been processed for '+ name +': [ '+ this.monthText + ', ' + this.year + ' ]';
+              this.showToast(this.action_text, true);
             }
           });
-        this.showToast(this.action_text, true);
       },
 
     }

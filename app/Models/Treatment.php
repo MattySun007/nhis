@@ -11,7 +11,7 @@ class Treatment extends Model
 {
   protected $table = 'treatments';
 
-  protected $fillable = ['user_id', 'hcp_id','code','bill','medical_officer','diagnosis','medical_condition','medication_administered','created_by','updated_by','paid','paid_at','refer_hcp_id'];
+  protected $fillable = ['user_id', 'hcp_id','verification_code','code','bill','medical_officer','diagnosis','medical_condition','medication_administered','created_by','updated_by','paid','paid_at','refer_hcp_id'];
 
   public function user()
   {

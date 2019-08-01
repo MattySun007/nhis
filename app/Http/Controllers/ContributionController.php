@@ -89,20 +89,19 @@ class ContributionController extends Controller
   public function process()
   {
     $data = $this->request->all();
-    //$data = array('month' => 7,'year' => 2019, 'institution_id' => 0);
     $result = $adoptees = [];
     if(auth()->user()->user_type == 'Institution User'){
       $result = User::whereIn('id', DB::table('institution_user')->where('institution_id', $data['institution_id'])->pluck('user_id'))
-        ->whereNotIn('id', DB::table('contributions')->where([['month', $data['month']], ['year',$data['year']], ['processed', 0]])->pluck('user_id'))->get()->all();
+        ->whereNotIn('id', DB::table('contributions')->where([['month', $data['month']], ['year',$data['year']], ['processed', 1]])->pluck('user_id'))->get()->all();
         //->with(['blood_group', 'genotype', 'marital_status', 'gender'])->get()->all();
     }
     if(auth()->user()->user_type == 'Individual Contributor'){
       $result = User::where('id', auth()->user()->id)
-        ->whereNotIn('id', DB::table('contributions')->where([['month', $data['month']], ['year',$data['year']], ['processed', 0]])->pluck('user_id'))->get()->all();
+        ->whereNotIn('id', DB::table('contributions')->where([['month', $data['month']], ['year',$data['year']], ['processed', 1]])->pluck('user_id'))->get()->all();
     }
     if(User::isAdoptor()){
       $adoptees = User::whereIn('id', DB::table('adoptees')->where('user_id', auth()->user()->id)->pluck('adoptee_id'))
-        ->whereNotIn('id', DB::table('contributions')->where([['month', $data['month']], ['year',$data['year']], ['processed', 0]])->pluck('user_id'))->get()->all();
+        ->whereNotIn('id', DB::table('contributions')->where([['month', $data['month']], ['year',$data['year']], ['processed', 1]])->pluck('user_id'))->get()->all();
     }
     return response()->json([
       'success' => (bool) $result || $adoptees,
@@ -114,7 +113,6 @@ class ContributionController extends Controller
   public function approve()
   {
     $data = $this->request->all();
-    //$data = array('month' => 7,'year' => 2019, 'institution_id' => 0);
     $result = $adoptees = [];
     if(auth()->user()->user_type == 'Institution User'){
       $result = User::whereIn('id', DB::table('institution_user')->where('institution_id', $data['institution_id'])->pluck('user_id'))
@@ -127,6 +125,29 @@ class ContributionController extends Controller
     if(User::isAdoptor()){
       $adoptees = User::whereIn('id', DB::table('adoptees')->where('user_id', auth()->user()->id)->pluck('adoptee_id'))
         ->whereIn('id', DB::table('contributions')->where([['month', $data['month']], ['year',$data['year']], ['processed', 1], ['approved', 0]])->pluck('user_id'))->get()->all();
+    }
+    return response()->json([
+      'success' => (bool) $result || $adoptees,
+      'message' => 'Records fetched',
+      'data' => ['result' => $result, 'adoptees' => $adoptees]
+    ]);
+  }
+
+  public function pay()
+  {
+    $data = $this->request->all();
+    $result = $adoptees = [];
+    if(auth()->user()->user_type == 'Institution User'){
+      $result = User::whereIn('id', DB::table('institution_user')->where('institution_id', $data['institution_id'])->pluck('user_id'))
+        ->whereIn('id', DB::table('contributions')->where([['month', $data['month']], ['year',$data['year']], ['processed', 1], ['approved', 1], ['paid', 0]])->pluck('user_id'))->get()->all();
+    }
+    if(auth()->user()->user_type == 'Individual Contributor'){
+      $result = User::where('id', auth()->user()->id)
+        ->whereIn('id', DB::table('contributions')->where([['month', $data['month']], ['year',$data['year']], ['processed', 1], ['approved', 1], ['paid', 0]])->pluck('user_id'))->get()->all();
+    }
+    if(User::isAdoptor()){
+      $adoptees = User::whereIn('id', DB::table('adoptees')->where('user_id', auth()->user()->id)->pluck('adoptee_id'))
+        ->whereIn('id', DB::table('contributions')->where([['month', $data['month']], ['year',$data['year']], ['processed', 1], ['approved', 1], ['paid', 0]])->pluck('user_id'))->get()->all();
     }
     return response()->json([
       'success' => (bool) $result || $adoptees,
@@ -139,19 +160,7 @@ class ContributionController extends Controller
   public function doProcess()
   {
     $data = $this->request->all();
-    $approved = 0; $approved_by = null; $approved_at = null; $bcode = $data['batch_code'];
-    //$data = array('month' => 7,'year' => 2019, 'user_id' => 3, 'batch_code' => 'NHIS_860854_7_2019', 'amount' => 4000);
-    if(auth()->user()->user_type == 'Individual Contributor'){
-      /**
-       * do process and approve same time
-       */
-      $approved = 1;
-      $bcode = $this->generateBatchCode( $data['month'],  $data['year']);
-      $approved_by = auth()->user()->id;
-      $approved_at = \Carbon\Carbon::now();
-    }
     $params = [
-      'batch_code' => $bcode,
       'user_id' => $data['user_id'],
       'amount' => $data['amount'],
       'month' => $data['month'],
@@ -159,9 +168,6 @@ class ContributionController extends Controller
       'processed' => 1,
       'processed_by' => auth()->user()->id,
       'processed_at' =>  \Carbon\Carbon::now(),
-      'approved' => $approved,
-      'approved_by' => $approved_by,
-      'approved_at' => $approved_at,
       'created_at' => \Carbon\Carbon::now(),
       'updated_at' => \Carbon\Carbon::now()
     ];
@@ -177,19 +183,35 @@ class ContributionController extends Controller
   public function doApprove()
   {
     $data = $this->request->all();
-    $bcode = $this->generateBatchCode($data['month'], $data['year']);
-    //$data = array('month' => 7,'year' => 2019, 'user_id' => 3, 'batch_code' => 'NHIS_860854_7_2019', 'amount' => 4000);
     $params = [
-      'batch_code' => $bcode,
       'approved' => 1,
       'approved_by' => auth()->user()->id,
       'approved_at' => \Carbon\Carbon::now(),
       'updated_at' => \Carbon\Carbon::now()
     ];
-    $save = Contribution::where([['user_id', $data['user_id']],['month', $data['month']],['year', $data['year']],['approved', 0]])->update($params);;
+    $save = Contribution::where([['user_id', $data['user_id']],['month', $data['month']],['year', $data['year']],['approved', 0]])->update($params);
     return response()->json([
       'success' => (bool) $save,
       'message' => $save ? 'User contribution approved' : 'User contribution not approved',
+      'data' => ['result' => $save]
+    ]);
+  }
+
+  public function doPay()
+  {
+    $data = $this->request->all();
+    $bcode = $this->generateBatchCode($data['month'], $data['year']);
+    $params = [
+      'batch_code' => $bcode,
+      'paid' => 1,
+      'paid_by' => auth()->user()->id,
+      'paid_at' => \Carbon\Carbon::now(),
+      'updated_at' => \Carbon\Carbon::now()
+    ];
+    $save = Contribution::whereIn('user_id', $data['users'])->where([['month', $data['month']],['year', $data['year']],['paid', 0]])->update($params);
+    return response()->json([
+      'success' => (bool) $save,
+      'message' => $save ? 'User contribution paid' : 'User contribution not paid',
       'data' => ['result' => $save]
     ]);
   }
@@ -198,7 +220,6 @@ class ContributionController extends Controller
   {
     $data = $this->request->all();
     //$data = array('month' => 7,'year' => 2019, 'users' => [3,22], 'batch_code' => '', 'mode' => 'process','user_type'=>'users');
-    $result = [];
     $str = $data['mode'] == 'process' ? 'processed' : 'approved';
     if(empty($data['users'])){
       return response()->json([
@@ -207,25 +228,15 @@ class ContributionController extends Controller
         'data' => ['result' => []]
       ]);
     }
-    if($data['mode'] == 'process'){
-      if($data['user_type'] == 'users'){
-        $result = Contribution::where([['month', $data['month']], ['year',$data['year']], ['approved', 0]])->whereIn('user_id', $data['users'])->with(['user'])->get()->all();
-      }else{
-        $result = Contribution::where([['month', $data['month']], ['year',$data['year']], ['approved', 0]])
-          ->whereIn('user_id', $data['users'])
-          ->whereIn('user_id', DB::table('adoptees')->pluck('adoptee_id'))
-          ->with(['user'])->get()->all();
-      }
-    }elseif($data['mode'] == 'approve'){
-      if($data['user_type'] == 'users'){
-        $result = Contribution::where([['month', $data['month']], ['year',$data['year']], ['approved', 1]])->whereIn('user_id', $data['users'])->with(['user'])->get()->all();
-      }else{
-        $result = Contribution::where([['month', $data['month']], ['year',$data['year']], ['approved', 1]])
-          ->whereIn('user_id', $data['users'])
-          ->whereIn('user_id', DB::table('adoptees')->pluck('adoptee_id'))
-          ->with(['user'])->get()->all();
-      }
+    if($data['user_type'] == 'users'){
+      $result = Contribution::where([['month', $data['month']], ['year',$data['year']], ['processed', 1]])->whereIn('user_id', $data['users'])->with(['user'])->get()->all();
+    }else{
+      $result = Contribution::where([['month', $data['month']], ['year',$data['year']], ['processed', 1]])
+        ->whereIn('user_id', $data['users'])
+        ->whereIn('user_id', DB::table('adoptees')->pluck('adoptee_id'))
+        ->with(['user'])->get()->all();
     }
+
     return response()->json([
       'success' => (bool) $result,
       'message' => 'User contribution '.$str,

@@ -21,7 +21,7 @@ class User extends Authenticatable
    * @var array
    */
   protected $fillable = [
-    'verification_no', 'password', 'temp_password', 'contribution_amount', 'blood_group_id', 'gender_id', 'marital_status_id', 'genotype_id', 'colour', 'height', 'date_of_birth','first_name','middle_name', 'last_name','email', 'phone', 'last_url'
+    'verification_no', 'password', 'temp_password', 'contribution_amount', 'blood_group_id', 'gender_id', 'marital_status_id', 'genotype_id', 'colour', 'height', 'date_of_birth','first_name','middle_name', 'last_name','email', 'phone', 'last_url', 'status'
   ];
 
   /**
@@ -183,6 +183,11 @@ class User extends Authenticatable
     return InstitutionUser::where('user_id', auth()->user()->id)->pluck('institution_id');
   }
 
+  public function getUserStatusAttribute()
+  {
+    return auth()->user()->status;
+  }
+
   public function getUserHcpsAttribute()
   {
     return HcpUser::where('user_id', auth()->user()->id)->pluck('hcp_id');
@@ -209,42 +214,11 @@ class User extends Authenticatable
 
   public function assignAgencyUserPermissions()
   {
-    /*$this->givePermissions(
-      'institutions:read',
-      'institutions:create',
-      'institutions:update',
-      'institutions:delete',
-      'hcps:create',
-      'hcps:update',
-      'hcps:read',
-      'hcp-users:read',
-      'hcp-users:update',
-      'hcp-users:create',
-      'hcp-users:delete',
-      'hcp-users:manage-permissions',
-      'institution-users:manage-permissions',
-      'institution-users:create',
-      'institution-users:update',
-      'institution-users:read',
-      'institution-users:delete',
-      'individual-contributors:read',
-      'individual-contributors:update',
-      'individual-contributors:create',
-      'individual-contributors:delete',
-      'institution-hcp:read',
-      'institution-hcp:create',
-      'institution-hcp:delete',
-      'claims:read',
-      'claims:manage',
-      'contributions:manage',
-      'agency-users:create',
-      'agency-users:read',
-      'agency-users:update',
-      'agency-users:delete'
-    );*/
-    // assign default permissions for everybody, others should be assignable by a user who has permissions:manage permission
     $this->givePermissions(
       'contributions:read',
+      'contributions:process',
+      'contributions:approve',
+      'contributions:pay',
       'adoptions:create',
       'adoptions:read',
       'adoptions:create',
@@ -258,25 +232,6 @@ class User extends Authenticatable
 
   public function assignHcpUserPermissions()
   {
-    /*$this->givePermissions(
-      'hcps:update',
-      'hcps:read',
-      'hcp-users:read',
-      'hcp-users:update',
-      'hcp-users:create',
-      'hcp-users:delete',
-      'hcp-users:manage-permissions',
-      'treatments:read',
-      'treatments:update',
-      'treatments:create',
-      'treatments:delete',
-      'claims:read',
-      'adoption:create',
-      'adoption:read',
-      'adoption:update',
-      'adoption:delete'
-    );*/
-    // assign default permissions for everybody, others should be assignable by a user who has permissions:manage permission
     $this->givePermissions(
       'contributions:read',
       'adoptions:create',
@@ -292,21 +247,6 @@ class User extends Authenticatable
 
   public function assignInstitutionUserPermissions()
   {
-    /*$this->givePermissions(
-      'institutions:update',
-      'institutions:read',
-      'institution-users:read',
-      'institution-users:update',
-      'institution-users:create',
-      'institution-users:delete',
-      'institution-users:manage-permissions',
-      'claims:read',
-      'adoption:create',
-      'adoption:read',
-      'adoption:update',
-      'adoption:delete'
-    );*/
-    // assign default permissions for everybody, others should be assignable by a user who has permissions:manage permission
     $this->givePermissions(
       'contributions:read',
       'adoptions:create',
@@ -326,6 +266,8 @@ class User extends Authenticatable
     $this->givePermissions(
       'contributions:read',
       'contributions:process',
+      'contributions:approve',
+      'contributions:pay',
       'adoptions:create',
       'adoptions:read',
       'adoptions:create',

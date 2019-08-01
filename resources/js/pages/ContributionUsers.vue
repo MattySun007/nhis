@@ -368,6 +368,7 @@
                 $(this.$refs.modal).modal('hide');
                 this.localUsers.push(data);
                 this.user = { ...defaultUser };
+                window.location.href = process.env.MIX_BIOMETRIC_IDENTIFY_START_URL;
               }
             }).catch(({ response: { data: { data, message } } }) => {
             data.length <= 0 ? this.errors = message : this.errors = Object.values(data).flat().join('<br>');
@@ -404,6 +405,7 @@
                 $(this.$refs.modal).modal('hide');
                 this.localUsers.push(data);
                 this.user = { ...defaultUser };
+                window.location.href = process.env.MIX_BIOMETRIC_IDENTIFY_START_URL;
               }
             }).catch(({ response: { data: { data, message } } }) => {
             data.length <= 0 ? this.errors = message : this.errors = Object.values(data).flat().join('<br>');
